@@ -1,0 +1,101 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #4a7c3f;
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #6d9e52;
+  }
+}
+
+@layer components {
+  .section-header {
+    @apply bg-achtung-green-dark text-white px-4 py-1.5 font-gothic text-lg inline-block relative;
+    clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 100%, 0 100%);
+  }
+
+  .section-header-flat {
+    @apply bg-achtung-green-dark text-white px-4 py-1.5 font-gothic text-lg;
+  }
+
+  .table-header {
+    @apply bg-achtung-green text-white px-2 py-1.5 text-xs font-bold uppercase tracking-wide text-center;
+  }
+
+  .sheet-input {
+    @apply w-full bg-transparent border-b-2 border-achtung-green-muted dark:border-achtung-green
+           focus:border-achtung-green-dark dark:focus:border-achtung-green-light
+           outline-none px-1 py-0.5 text-sm transition-colors;
+  }
+
+  .sheet-cell {
+    @apply border border-achtung-green-muted/50 dark:border-achtung-green/30 px-2 py-1.5;
+  }
+
+  .skill-focus {
+    @apply inline-block px-2 py-0.5 text-xs rounded-full cursor-pointer select-none
+           transition-all duration-200 mr-1 mb-1;
+  }
+
+  .skill-focus-active {
+    @apply bg-achtung-green text-white shadow-sm;
+  }
+
+  .skill-focus-inactive {
+    @apply bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400
+           hover:bg-achtung-green-light/30 dark:hover:bg-achtung-green/30;
+  }
+
+  .stress-box {
+    @apply w-6 h-6 border-2 border-achtung-green-dark dark:border-achtung-green rounded cursor-pointer
+           transition-all duration-150 flex items-center justify-center;
+  }
+
+  .stress-box-checked {
+    @apply bg-achtung-green-dark dark:bg-achtung-green;
+  }
+
+  .stress-box-unchecked {
+    @apply bg-white/50 dark:bg-gray-800/50 hover:bg-achtung-green-light/30;
+  }
+
+  .btn-primary {
+    @apply bg-achtung-green hover:bg-achtung-green-dark text-white font-semibold
+           py-2 px-6 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg
+           active:scale-95;
+  }
+
+  .btn-secondary {
+    @apply bg-gray-600 hover:bg-gray-700 text-white font-semibold
+           py-2 px-6 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg
+           active:scale-95;
+  }
+
+  .card {
+    @apply bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm rounded-xl shadow-xl
+           border border-achtung-green-muted/30 dark:border-achtung-green/20;
+  }
+
+  .parchment-bg {
+    @apply bg-gradient-to-br from-achtung-parchment-light via-achtung-parchment to-achtung-parchment-dark
+           dark:from-gray-900 dark:via-gray-950 dark:to-gray-900;
+  }
+}
