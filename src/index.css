@@ -7,6 +7,15 @@
     box-sizing: border-box;
   }
 
+  body {
+    background-image: url('/fotodefundo.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    min-height: 100vh;
+  }
+
   ::-webkit-scrollbar {
     width: 8px;
     height: 8px;
@@ -95,7 +104,7 @@
   }
 
   .parchment-bg {
-    @apply bg-gradient-to-br from-achtung-parchment-light via-achtung-parchment to-achtung-parchment-dark
-           dark:from-gray-900 dark:via-gray-950 dark:to-gray-900;
+    @apply bg-gradient-to-br from-achtung-parchment-light/70 via-achtung-parchment/60 to-achtung-parchment-dark/70
+           dark:from-gray-900/70 dark:via-gray-950/60 dark:to-gray-900/70;
   }
 }
