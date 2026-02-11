@@ -516,7 +516,7 @@ export default function Chat({ senderName, onClose }) {
               </div>
 
               {msg.type === 'message' && (
-                <p className="text-sm">{msg.content}</p>
+                <div className="text-sm whitespace-pre-line">{msg.content}</div>
               )}
 
               {msg.type === 'roll' && msg.rollData && (

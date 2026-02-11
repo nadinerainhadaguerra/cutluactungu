@@ -72,6 +72,20 @@ export default function SheetPage1({ character, updateField, updateCharacter }) 
     })
   }
 
+  const calculateStress = () => {
+    const forca = parseInt(character.attributes?.strength?.graduation) || 0
+    const vontade = parseInt(character.attributes?.will?.graduation) || 0
+    const resiliencia = parseInt(character.skills?.resiliencia?.graduation) || 0
+    const total = (forca >= vontade ? forca : vontade) + resiliencia
+    updateCharacter(prev => {
+      const stress = Array(24).fill(false)
+      for (let i = 0; i < Math.min(total, 24); i++) {
+        stress[i] = true
+      }
+      return { ...prev, stress }
+    })
+  }
+
   const toggleWound = (index) => {
     updateCharacter(prev => {
       const wounds = [...prev.wounds]
@@ -320,7 +334,18 @@ export default function SheetPage1({ character, updateField, updateCharacter }) 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Estresse */}
         <div className="lg:col-span-1">
-          <SectionHeader>Estresse</SectionHeader>
+          <div className="flex items-center gap-2">
+            <SectionHeader>Estresse</SectionHeader>
+            <button
+              onClick={calculateStress}
+              title="Calcular Estresse"
+              className="p-1.5 rounded-lg hover:bg-achtung-green/20 transition-colors"
+            >
+              <svg className="w-5 h-5 text-achtung-green-dark dark:text-achtung-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+              </svg>
+            </button>
+          </div>
           <div className="mt-2 space-y-1.5">
             <div className="grid grid-cols-12 gap-1">
               {character.stress.slice(0, 12).map((checked, i) => (
@@ -440,9 +465,17 @@ export default function SheetPage1({ character, updateField, updateCharacter }) 
         {/* Ferimentos */}
         <div className="lg:col-span-1">
           <SectionHeader>Ferimentos</SectionHeader>
-          <div className="mt-2 flex flex-wrap gap-1.5">
-            {character.wounds.map((checked, i) => (
-              <StressBox key={i} checked={checked} onClick={() => toggleWound(i)} />
+          <div className="mt-2 grid grid-cols-1 gap-3 place-items-center">
+            {(character.wounds || []).slice(0, 3).map((checked, i) => (
+              <div
+                key={i}
+                onClick={() => toggleWound(i)}
+                className={`w-20 h-20 border-2 border-achtung-green-dark dark:border-achtung-green rounded cursor-pointer
+                  transition-all duration-150 flex items-center justify-center
+                  ${checked ? 'stress-box-checked' : 'stress-box-unchecked'}`}
+              >
+                {checked && <span className="text-white text-2xl font-bold">✕</span>}
+              </div>
             ))}
           </div>
         </div>

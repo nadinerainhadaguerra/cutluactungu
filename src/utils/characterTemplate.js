@@ -92,7 +92,7 @@ export function createCharacterTemplate(name, password) {
     personalTruths: ['', '', '', ''],
     stress: Array(24).fill(false),
     courage: '',
-    wounds: Array(5).fill(false),
+    wounds: Array(3).fill(false),
     armor: '',
     languages: [],
     fortune: '',
@@ -101,9 +101,7 @@ export function createCharacterTemplate(name, password) {
     belongings: Array(12).fill(''),
     weapons: [],
     biography: '',
-    talents: Array(7).fill(null).map(() => ({
-      name: '', keyword: '', effect: '',
-    })),
+    talents: [],
     spells: Array(7).fill(null).map(() => ({
       name: '', skill: '', difficulty: '', cost: '', duration: '', effect: '', momentum: '',
     })),
