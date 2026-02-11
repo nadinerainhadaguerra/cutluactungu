@@ -8,6 +8,7 @@ import { createCharacterTemplate } from '../utils/characterTemplate'
 
 // Firestore collections
 const CHARACTERS_COL = 'characters'
+const NPCS_COL = 'npcs'
 const MESSAGES_COL = 'messages'
 const CONFIG_DOC = doc(db, 'config', 'settings')
 
@@ -117,6 +118,35 @@ export const storage = {
 
   onCharacterChanged(name, callback) {
     return onSnapshot(doc(db, CHARACTERS_COL, name), snap => {
+      callback(snap.exists() ? snap.data() : null)
+    })
+  },
+
+  // --- NPCs ---
+  async createNpc(name) {
+    const character = createCharacterTemplate(name, '')
+    character.isNpc = true
+    await setDoc(doc(db, NPCS_COL, name), character)
+    return character
+  },
+
+  async saveNpc(character) {
+    character.updatedAt = new Date().toISOString()
+    await setDoc(doc(db, NPCS_COL, character.name), character)
+  },
+
+  async deleteNpc(name) {
+    await deleteDoc(doc(db, NPCS_COL, name))
+  },
+
+  onNpcsChanged(callback) {
+    return onSnapshot(collection(db, NPCS_COL), snap => {
+      callback(snap.docs.map(d => d.data()))
+    })
+  },
+
+  onNpcChanged(name, callback) {
+    return onSnapshot(doc(db, NPCS_COL, name), snap => {
       callback(snap.exists() ? snap.data() : null)
     })
   },

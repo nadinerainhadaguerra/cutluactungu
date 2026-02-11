@@ -76,18 +76,21 @@ function MomentumCounter() {
   )
 }
 
-export default function CharacterSheet({ characterName, isMaster = false }) {
+export default function CharacterSheet({ characterName, isMaster = false, isNpc = false }) {
   const [character, setCharacter] = useState(null)
   const [activeTab, setActiveTab] = useState(1)
   const { setActiveCharacterName } = useSelection()
   const saveTimerRef = useRef(null)
   const localUpdateRef = useRef(false)
 
+  const listenFn = isNpc ? storage.onNpcChanged.bind(storage) : storage.onCharacterChanged.bind(storage)
+  const saveFn = isNpc ? storage.saveNpc.bind(storage) : storage.saveCharacter.bind(storage)
+
   useEffect(() => {
     setActiveCharacterName(characterName)
 
     // Real-time listener for character data
-    const unsub = storage.onCharacterChanged(characterName, (data) => {
+    const unsub = listenFn(characterName, (data) => {
       // Only update from Firestore if we didn't just make a local change
       if (!localUpdateRef.current) {
         if (data) setCharacter(data)
@@ -99,7 +102,7 @@ export default function CharacterSheet({ characterName, isMaster = false }) {
       unsub()
       if (saveTimerRef.current) clearTimeout(saveTimerRef.current)
     }
-  }, [characterName, setActiveCharacterName])
+  }, [characterName, setActiveCharacterName, listenFn])
 
   const updateCharacter = useCallback((updater) => {
     setCharacter(prev => {
@@ -112,12 +115,12 @@ export default function CharacterSheet({ characterName, isMaster = false }) {
       // Debounced save to Firestore
       if (saveTimerRef.current) clearTimeout(saveTimerRef.current)
       saveTimerRef.current = setTimeout(() => {
-        storage.saveCharacter(updated)
+        saveFn(updated)
       }, 600)
 
       return updated
     })
-  }, [])
+  }, [saveFn])
 
   const updateField = useCallback((field, value) => {
     updateCharacter(prev => ({ ...prev, [field]: value }))
