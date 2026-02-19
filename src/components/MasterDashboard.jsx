@@ -295,7 +295,6 @@ export default function MasterDashboard() {
   const [selectedNpc, setSelectedNpc] = useState(null)
   const [showNpcPopup, setShowNpcPopup] = useState(false)
   const [editingNpc, setEditingNpc] = useState(null)
-  const [resetPasswordChar, setResetPasswordChar] = useState(null)
 
   useEffect(() => {
     const unsubChars = storage.onCharactersChanged(setCharacters)
@@ -322,9 +321,9 @@ export default function MasterDashboard() {
     await storage.deleteNpc(name)
   }
 
-  const resetPassword = async (characterName, newPassword) => {
-    await storage.resetCharacterPassword(characterName, newPassword)
-    setResetPasswordChar(null)
+  const deleteCharacter = async (name) => {
+    if (!confirm(`Excluir a ficha de "${name}"? Esta ação não pode ser desfeita.`)) return
+    await storage.deleteCharacter(name)
   }
 
   // Viewing a player character sheet
@@ -409,7 +408,7 @@ export default function MasterDashboard() {
                 key={char.name}
                 char={char}
                 onClick={() => setSelectedCharacter(char.name)}
-                onResetPassword={() => setResetPasswordChar(char.name)}
+                onDelete={() => deleteCharacter(char.name)}
               />
             ))}
           </div>
@@ -474,14 +473,7 @@ export default function MasterDashboard() {
         />
       )}
 
-      {/* Reset Password Popup */}
-      {resetPasswordChar && (
-        <ResetPasswordPopup
-          characterName={resetPasswordChar}
-          onSave={(newPassword) => resetPassword(resetPasswordChar, newPassword)}
-          onClose={() => setResetPasswordChar(null)}
-        />
-      )}
+
     </div>
   )
 }

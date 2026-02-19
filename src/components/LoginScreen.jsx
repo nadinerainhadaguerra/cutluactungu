@@ -233,7 +233,7 @@ export default function LoginScreen() {
             />
             <input
               type="password"
-              placeholder="Senha da ficha"
+              placeholder="Senha"
               value={newPlayerPassword}
               onChange={e => setNewPlayerPassword(e.target.value)}
               className="w-full px-4 py-2.5 rounded-lg border-2 border-achtung-green-muted/50

@@ -21,12 +21,13 @@ export function AuthProvider({ children }) {
   }
 
   const loginAsPlayer = async (characterName, password) => {
+    const correctPassword = await storage.getMasterPassword()
+    if (password !== correctPassword) {
+      return { success: false, error: 'Senha incorreta.' }
+    }
     const character = await storage.getCharacter(characterName)
     if (!character) {
       return { success: false, error: 'Personagem não encontrado.' }
-    }
-    if (character.password !== password) {
-      return { success: false, error: 'Senha incorreta.' }
     }
     const session = { type: 'player', name: characterName }
     setUser(session)
@@ -38,14 +39,15 @@ export function AuthProvider({ children }) {
     if (!characterName.trim()) {
       return { success: false, error: 'Digite um nome para o personagem.' }
     }
-    if (!password.trim()) {
-      return { success: false, error: 'Digite uma senha.' }
+    const correctPassword = await storage.getMasterPassword()
+    if (password !== correctPassword) {
+      return { success: false, error: 'Senha incorreta.' }
     }
     const exists = await storage.characterExists(characterName.trim())
     if (exists) {
       return { success: false, error: 'Já existe uma ficha com esse nome.' }
     }
-    await storage.createCharacter(characterName.trim(), password)
+    await storage.createCharacter(characterName.trim(), '')
     const session = { type: 'player', name: characterName.trim() }
     setUser(session)
     sessionStorage.setItem('achtung_session', JSON.stringify(session))
