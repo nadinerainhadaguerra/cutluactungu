@@ -1,60 +1,48 @@
 import { createContext, useContext, useState } from 'react'
-import { storage } from '../services/storage'
 
 const AuthContext = createContext()
 
+const MASTER_PASSWORD = 'DnD7MarPkm'
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => {
-    const saved = sessionStorage.getItem('achtung_session')
+    const saved = sessionStorage.getItem('rpg-user')
     return saved ? JSON.parse(saved) : null
   })
 
-  const loginAsMaster = async (password) => {
-    const masterPassword = await storage.getMasterPassword()
-    if (password === masterPassword) {
-      const session = { type: 'master', name: 'Mestre' }
-      setUser(session)
-      sessionStorage.setItem('achtung_session', JSON.stringify(session))
-      return { success: true }
+  const loginAsMaster = (password) => {
+    if (password === MASTER_PASSWORD) {
+      const userData = { role: 'master', name: 'Mestre' }
+      setUser(userData)
+      sessionStorage.setItem('rpg-user', JSON.stringify(userData))
+      return true
     }
-    return { success: false, error: 'Senha incorreta.' }
+    return false
   }
 
-  const loginAsPlayer = async (characterName, password) => {
-    const character = await storage.getCharacter(characterName)
-    if (!character) {
-      return { success: false, error: 'Personagem não encontrado.' }
+  const loginAsPlayer = (name, password) => {
+    if (password === MASTER_PASSWORD && name.trim()) {
+      const userData = { role: 'player', name: name.trim(), isNew: false }
+      setUser(userData)
+      sessionStorage.setItem('rpg-user', JSON.stringify(userData))
+      return true
     }
-    if (character.password !== password) {
-      return { success: false, error: 'Senha incorreta.' }
-    }
-    const session = { type: 'player', name: characterName }
-    setUser(session)
-    sessionStorage.setItem('achtung_session', JSON.stringify(session))
-    return { success: true }
+    return false
   }
 
-  const loginAsNewPlayer = async (characterName, password) => {
-    if (!characterName.trim()) {
-      return { success: false, error: 'Digite um nome para o personagem.' }
+  const loginAsNewPlayer = (name, password) => {
+    if (password === MASTER_PASSWORD && name.trim()) {
+      const userData = { role: 'player', name: name.trim(), isNew: true }
+      setUser(userData)
+      sessionStorage.setItem('rpg-user', JSON.stringify(userData))
+      return true
     }
-    if (!password.trim()) {
-      return { success: false, error: 'Digite uma senha.' }
-    }
-    const exists = await storage.characterExists(characterName.trim())
-    if (exists) {
-      return { success: false, error: 'Já existe uma ficha com esse nome.' }
-    }
-    await storage.createCharacter(characterName.trim(), password)
-    const session = { type: 'player', name: characterName.trim() }
-    setUser(session)
-    sessionStorage.setItem('achtung_session', JSON.stringify(session))
-    return { success: true }
+    return false
   }
 
   const logout = () => {
     setUser(null)
-    sessionStorage.removeItem('achtung_session')
+    sessionStorage.removeItem('rpg-user')
   }
 
   return (
@@ -64,8 +52,4 @@ export function AuthProvider({ children }) {
   )
 }
 
-export function useAuth() {
-  const context = useContext(AuthContext)
-  if (!context) throw new Error('useAuth must be used within AuthProvider')
-  return context
-}
+export const useAuth = () => useContext(AuthContext)

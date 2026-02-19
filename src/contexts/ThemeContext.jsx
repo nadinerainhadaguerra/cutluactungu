@@ -3,32 +3,23 @@ import { createContext, useContext, useState, useEffect } from 'react'
 const ThemeContext = createContext()
 
 export function ThemeProvider({ children }) {
-  const [isDark, setIsDark] = useState(() => {
-    const saved = localStorage.getItem('achtung_theme')
+  const [darkMode, setDarkMode] = useState(() => {
+    const saved = localStorage.getItem('rpg-theme')
     return saved !== null ? saved === 'dark' : true
   })
 
   useEffect(() => {
-    const root = document.documentElement
-    if (isDark) {
-      root.classList.add('dark')
-    } else {
-      root.classList.remove('dark')
-    }
-    localStorage.setItem('achtung_theme', isDark ? 'dark' : 'light')
-  }, [isDark])
+    document.documentElement.classList.toggle('dark', darkMode)
+    localStorage.setItem('rpg-theme', darkMode ? 'dark' : 'light')
+  }, [darkMode])
 
-  const toggleTheme = () => setIsDark(prev => !prev)
+  const toggleTheme = () => setDarkMode(prev => !prev)
 
   return (
-    <ThemeContext.Provider value={{ isDark, toggleTheme }}>
+    <ThemeContext.Provider value={{ darkMode, toggleTheme }}>
       {children}
     </ThemeContext.Provider>
   )
 }
 
-export function useTheme() {
-  const context = useContext(ThemeContext)
-  if (!context) throw new Error('useTheme must be used within ThemeProvider')
-  return context
-}
+export const useTheme = () => useContext(ThemeContext)
