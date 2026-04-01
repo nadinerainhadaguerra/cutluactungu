@@ -1,7 +1,7 @@
 import { db } from './firebase'
 import {
   doc, getDoc, setDoc, updateDoc, deleteDoc,
-  collection, getDocs, addDoc, query, orderBy, writeBatch,
+  collection, getDocs, addDoc, query, orderBy, where, writeBatch,
   onSnapshot,
 } from 'firebase/firestore'
 import { createCharacterTemplate } from '../utils/characterTemplate'
@@ -12,6 +12,8 @@ const NPCS_COL = 'npcs'
 const MESSAGES_COL = 'messages'
 const CONFIG_DOC = doc(db, 'config', 'settings')
 const NOTES_COL = 'notes'
+const SCENARIOS_COL = 'scenarios'
+const ACTIVE_SCENARIO_DOC = doc(db, 'config', 'activeScenario')
 
 export const storage = {
   // --- Config / Master Password ---
@@ -157,11 +159,12 @@ export const storage = {
   },
 
   // --- Notes ---
-  async createNote(title, description, tag) {
+  async createNote(title, description, tag, owner) {
     await addDoc(collection(db, NOTES_COL), {
       title,
       description,
       tag: tag || '',
+      owner,
       createdAt: new Date().toISOString(),
     })
   },
@@ -174,10 +177,52 @@ export const storage = {
     await deleteDoc(doc(db, NOTES_COL, docId))
   },
 
-  onNotesChanged(callback) {
-    const q = query(collection(db, NOTES_COL), orderBy('createdAt', 'desc'))
+  onNotesChanged(callback, owner) {
+    const q = query(collection(db, NOTES_COL), where('owner', '==', owner), orderBy('createdAt', 'desc'))
     return onSnapshot(q, snap => {
       callback(snap.docs.map(d => ({ ...d.data(), _id: d.id })))
+    })
+  },
+
+  // --- Scenarios ---
+  async createScenario(title, images) {
+    await addDoc(collection(db, SCENARIOS_COL), {
+      title,
+      images,
+      createdAt: new Date().toISOString(),
+    })
+  },
+
+  async updateScenario(id, title, images) {
+    await updateDoc(doc(db, SCENARIOS_COL, id), { title, images })
+  },
+
+  async deleteScenario(id) {
+    await deleteDoc(doc(db, SCENARIOS_COL, id))
+  },
+
+  onScenariosChanged(callback) {
+    const q = query(collection(db, SCENARIOS_COL), orderBy('createdAt', 'desc'))
+    return onSnapshot(q, snap => {
+      callback(snap.docs.map(d => ({ ...d.data(), _id: d.id })))
+    })
+  },
+
+  async showScenario(scenarioId, imageUrl, imageIndex, shownTo) {
+    await setDoc(ACTIVE_SCENARIO_DOC, { scenarioId, imageUrl, imageIndex, shownTo })
+  },
+
+  async updateActiveImage(imageUrl, imageIndex) {
+    await updateDoc(ACTIVE_SCENARIO_DOC, { imageUrl, imageIndex })
+  },
+
+  async hideScenario() {
+    await setDoc(ACTIVE_SCENARIO_DOC, { scenarioId: null, imageUrl: '', imageIndex: 0, shownTo: [] })
+  },
+
+  onActiveScenarioChanged(callback) {
+    return onSnapshot(ACTIVE_SCENARIO_DOC, snap => {
+      callback(snap.exists() ? snap.data() : null)
     })
   },
 }

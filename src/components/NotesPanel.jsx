@@ -202,7 +202,7 @@ function NoteCard({ note, onDelete, onEdit, openTooltipId, setOpenTooltipId }) {
   )
 }
 
-export default function NotesPanel({ onClose }) {
+export default function NotesPanel({ onClose, owner }) {
   const [notes, setNotes] = useState([])
   const [showPopup, setShowPopup] = useState(false)
   const [editingNote, setEditingNote] = useState(null)
@@ -212,9 +212,9 @@ export default function NotesPanel({ onClose }) {
   const [filterOpen, setFilterOpen] = useState(false)
 
   useEffect(() => {
-    const unsub = storage.onNotesChanged(setNotes)
+    const unsub = storage.onNotesChanged(setNotes, owner)
     return () => unsub()
-  }, [])
+  }, [owner])
 
   const allTags = [...new Set(notes.map(n => n.tag).filter(Boolean))].sort((a, b) => {
     const aIsNum = /^\d/.test(a)
@@ -233,7 +233,7 @@ export default function NotesPanel({ onClose }) {
   useEffect(() => { setPage(0) }, [activeTag])
 
   const createNote = async (title, description, tag) => {
-    await storage.createNote(title, description, tag)
+    await storage.createNote(title, description, tag, owner)
     setShowPopup(false)
     setPage(0)
   }

@@ -1,10 +1,14 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { useTheme } from '../contexts/ThemeContext'
 import CharacterSheet from './CharacterSheet'
 import MasterDashboard from './MasterDashboard'
 import Chat from './Chat'
 import NotesPanel from './NotesPanel'
+import ScenariosPanel from './ScenariosPanel'
+import ScenarioViewer from './ScenarioViewer'
+import ScenarioDisplay from './ScenarioDisplay'
+import { storage } from '../services/storage'
 
 function ThemeToggle() {
   const { isDark, toggleTheme } = useTheme()
@@ -31,6 +35,24 @@ export default function Layout() {
   const { user, logout } = useAuth()
   const [chatOpen, setChatOpen] = useState(false)
   const [notesOpen, setNotesOpen] = useState(false)
+  const [scenariosOpen, setScenariosOpen] = useState(false)
+  const [viewingScenario, setViewingScenario] = useState(null)
+  const [activeScenario, setActiveScenario] = useState(null)
+
+  useEffect(() => {
+    const unsub = storage.onActiveScenarioChanged(setActiveScenario)
+    return () => unsub()
+  }, [])
+
+  const toggleNotes = () => {
+    if (notesOpen) { setNotesOpen(false) }
+    else { setNotesOpen(true); setScenariosOpen(false) }
+  }
+
+  const toggleScenarios = () => {
+    if (scenariosOpen) { setScenariosOpen(false) }
+    else { setScenariosOpen(true); setNotesOpen(false) }
+  }
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -49,16 +71,27 @@ export default function Layout() {
 
             {user.type === 'master' && (
               <button
-                onClick={() => setNotesOpen(!notesOpen)}
+                onClick={toggleScenarios}
                 className="p-2 rounded-lg hover:bg-white/20 transition-colors relative"
-                title="Notas"
+                title="Cenários da Sessão"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
               </button>
             )}
+
+            <button
+              onClick={toggleNotes}
+              className="p-2 rounded-lg hover:bg-white/20 transition-colors relative"
+              title="Notas"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            </button>
 
             <button
               onClick={() => setChatOpen(!chatOpen)}
@@ -86,7 +119,7 @@ export default function Layout() {
 
       {/* Main Content */}
       <div className="flex-1 flex relative">
-        <main className={`flex-1 transition-all duration-300 ${chatOpen ? 'lg:mr-80' : ''} ${notesOpen ? 'lg:ml-80' : ''}`}>
+        <main className={`flex-1 transition-all duration-300 ${chatOpen ? 'lg:mr-80' : ''} ${(notesOpen || scenariosOpen) ? 'lg:ml-80' : ''}`}>
           {user.type === 'master' ? (
             <MasterDashboard />
           ) : (
@@ -94,15 +127,32 @@ export default function Layout() {
           )}
         </main>
 
-        {/* Notes Sidebar (left) - master only */}
+        {/* Notes Sidebar (left) */}
+        <div
+          className={`fixed inset-y-0 left-0 z-30 w-full sm:w-96 lg:w-80 transform transition-transform
+                      duration-300 ${notesOpen ? 'translate-x-0' : '-translate-x-full'}
+                      top-[57px] bg-white dark:bg-gray-900 border-r border-achtung-green/20
+                      dark:border-achtung-green/10 shadow-2xl`}
+        >
+          <NotesPanel
+            onClose={() => setNotesOpen(false)}
+            owner={user.type === 'master' ? 'master' : user.name}
+          />
+        </div>
+
+        {/* Scenarios Sidebar (left) - master only */}
         {user.type === 'master' && (
           <div
             className={`fixed inset-y-0 left-0 z-30 w-full sm:w-96 lg:w-80 transform transition-transform
-                        duration-300 ${notesOpen ? 'translate-x-0' : '-translate-x-full'}
+                        duration-300 ${scenariosOpen ? 'translate-x-0' : '-translate-x-full'}
                         top-[57px] bg-white dark:bg-gray-900 border-r border-achtung-green/20
                         dark:border-achtung-green/10 shadow-2xl`}
           >
-            <NotesPanel onClose={() => setNotesOpen(false)} />
+            <ScenariosPanel
+              onClose={() => setScenariosOpen(false)}
+              activeScenario={activeScenario}
+              onViewScenario={setViewingScenario}
+            />
           </div>
         )}
 
@@ -132,7 +182,30 @@ export default function Layout() {
             onClick={() => setNotesOpen(false)}
           />
         )}
+        {scenariosOpen && (
+          <div
+            className="fixed inset-0 bg-black/50 z-20 lg:hidden top-[57px]"
+            onClick={() => setScenariosOpen(false)}
+          />
+        )}
       </div>
+
+      {/* Scenario Viewer - master only */}
+      {viewingScenario && (
+        <ScenarioViewer
+          scenario={viewingScenario}
+          onClose={() => setViewingScenario(null)}
+          activeScenario={activeScenario}
+        />
+      )}
+
+      {/* Scenario Display - players */}
+      {user.type === 'player' && (
+        <ScenarioDisplay
+          activeScenario={activeScenario}
+          isTargeted={!!(activeScenario?.shownTo?.includes(user.name) && activeScenario?.imageUrl)}
+        />
+      )}
     </div>
   )
 }
