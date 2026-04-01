@@ -99,7 +99,7 @@
   }
 
   .card {
-    @apply bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm rounded-xl shadow-xl
+    @apply bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm rounded-xl shadow-xl
            border border-achtung-green-muted/30 dark:border-achtung-green/20;
   }
 

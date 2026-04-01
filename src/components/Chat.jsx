@@ -62,11 +62,13 @@ function SystemRollMessage({ data }) {
             key={i}
             className={`w-10 h-10 flex items-center justify-center rounded-lg font-bold text-lg
               border-2 ${
-              die.success
-                ? data.focus
-                  ? 'border-yellow-500 bg-yellow-500/20 text-yellow-500 shadow-md shadow-yellow-500/20'
-                  : 'border-green-500 bg-green-500/20 text-green-500'
-                : 'border-red-500 bg-red-500/20 text-red-500'
+              die.value === 20
+                ? 'border-orange-500 bg-orange-500/20 text-orange-500 shadow-md shadow-orange-500/20'
+                : die.success
+                  ? data.focus
+                    ? 'border-yellow-500 bg-yellow-500/20 text-yellow-500 shadow-md shadow-yellow-500/20'
+                    : 'border-green-500 bg-green-500/20 text-green-500'
+                  : 'border-red-400 bg-red-400/10 text-red-400'
             }`}
           >
             {die.value}
@@ -152,8 +154,9 @@ function DiceRollPopup({ characterName, onClose, onRollComplete }) {
       })
     }
 
-    const totalSuccesses = dice.filter(d => d.success).length
-    const totalComplications = dice.filter(d => !d.success).length
+    const successCount = dice.filter(d => d.success).length
+    const totalSuccesses = selectedFocus !== 'nenhum' ? successCount * 2 : successCount
+    const totalComplications = dice.filter(d => d.value === 20).length
 
     const rollData = {
       attribute: { name: selectedAttribute.name, value: attrValue },
@@ -295,7 +298,7 @@ function DiceRollPopup({ characterName, onClose, onRollComplete }) {
                 <div>
                   <label className="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">
                     Usar Foco
-                    <span className="font-normal text-xs text-gray-500 ml-1">(sucessos em dourado)</span>
+                    <span className="font-normal text-xs text-gray-500 ml-1">(cada sucesso conta como 2)</span>
                   </label>
                   <select
                     value={selectedFocus}
@@ -429,6 +432,9 @@ export default function Chat({ senderName, onClose }) {
       timestamp: new Date().toISOString(),
     }
     await storage.saveMessage(message)
+    if (rollData.totalComplications > 0) {
+      await storage.addComplications(rollData.totalComplications)
+    }
   }
 
   const clearChat = async () => {
@@ -456,7 +462,7 @@ export default function Chat({ senderName, onClose }) {
           {/* Dice Roll Button */}
           <button
             onClick={() => setShowDicePopup(true)}
-            className="p-1.5 rounded hover:bg-white/20 transition-colors text-white/70 hover:text-white"
+            className="p-2 rounded hover:bg-white/20 transition-colors text-white/70 hover:text-white"
             title="Rolagem de dados"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
@@ -466,7 +472,7 @@ export default function Chat({ senderName, onClose }) {
           {/* Clear Chat Button */}
           <button
             onClick={clearChat}
-            className="p-1.5 rounded hover:bg-white/20 transition-colors text-white/70 hover:text-white"
+            className="p-2 rounded hover:bg-white/20 transition-colors text-white/70 hover:text-white"
             title="Limpar chat"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -477,7 +483,7 @@ export default function Chat({ senderName, onClose }) {
           {/* Close Button */}
           <button
             onClick={onClose}
-            className="p-1.5 rounded hover:bg-white/20 transition-colors text-white/70 hover:text-white"
+            className="p-2 rounded hover:bg-white/20 transition-colors text-white/70 hover:text-white"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -547,7 +553,7 @@ export default function Chat({ senderName, onClose }) {
             placeholder="Mensagem ou /r 2d6+3..."
             className="flex-1 px-3 py-2 rounded-lg border-2 border-achtung-green-muted/30
                        dark:border-achtung-green/20 bg-white dark:bg-gray-800
-                       text-gray-900 dark:text-gray-100 text-sm
+                       text-gray-900 dark:text-gray-100 text-base
                        focus:border-achtung-green dark:focus:border-achtung-green-light
                        outline-none transition-colors"
           />

@@ -284,7 +284,7 @@ function WeaponCard({ weapon, onClickName, onClickImage, onEdit, onDelete }) {
   return (
     <div className="relative flex flex-col items-center gap-1.5 p-2 rounded-xl
                     bg-gray-50 dark:bg-gray-800/60 border border-achtung-green/20
-                    hover:border-achtung-green/40 transition-colors w-32 group">
+                    hover:border-achtung-green/40 transition-colors w-28 sm:w-32 group">
       <div className="absolute top-1 right-1 flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
         <button type="button" onClick={onEdit}
           className="w-5 h-5 flex items-center justify-center rounded bg-achtung-green/80
@@ -303,7 +303,7 @@ function WeaponCard({ weapon, onClickName, onClickImage, onEdit, onDelete }) {
         </button>
       </div>
       <button type="button" onClick={onClickImage}
-        className="w-24 h-24 rounded-lg overflow-hidden bg-gray-200 dark:bg-gray-700
+        className="w-20 h-20 sm:w-24 sm:h-24 rounded-lg overflow-hidden bg-gray-200 dark:bg-gray-700
                    hover:ring-2 hover:ring-achtung-green transition-all cursor-pointer
                    active:scale-95 flex items-center justify-center"
         title="Rolar estresse da arma">
@@ -503,7 +503,7 @@ export default function SheetPage2({ character, updateCharacter }) {
             Nenhum talento adicionado.
           </p>
         ) : (
-          <div className="mt-3 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 items-start">
+          <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 items-start">
             {talents.map((talent) => (
               <TalentCard
                 key={talent._idx}

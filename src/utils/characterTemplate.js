@@ -89,7 +89,7 @@ export function createCharacterTemplate(name, password) {
     archetype: '',
     background: '',
     characteristic: '',
-    personalTruths: ['', '', '', ''],
+    personalTruths: ['', '', '', '', ''],
     stress: Array(24).fill(false),
     courage: '',
     wounds: Array(3).fill(false),

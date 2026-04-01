@@ -318,7 +318,7 @@ export default function SheetPage3({ character, updateField, updateCharacter }) 
             type="text"
             value={character.power || ''}
             onChange={e => updateField('power', e.target.value)}
-            className="w-20 bg-transparent border-2 border-achtung-green-dark dark:border-achtung-green
+            className="w-16 sm:w-20 bg-transparent border-2 border-achtung-green-dark dark:border-achtung-green
                        rounded px-2 py-1 text-center text-lg font-bold outline-none
                        focus:border-achtung-green-light transition-colors"
           />

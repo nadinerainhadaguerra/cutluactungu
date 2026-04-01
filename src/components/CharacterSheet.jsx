@@ -32,7 +32,7 @@ function MomentumCounter() {
   }
 
   return (
-    <div className="flex items-center justify-center gap-3 py-2 px-4 rounded-xl
+    <div className="flex items-center justify-center gap-2 sm:gap-3 py-2 px-2 sm:px-4 rounded-xl
                     bg-achtung-green/10 dark:bg-achtung-green/5 border border-achtung-green/30">
       <span className="font-gothic text-lg text-achtung-green-dark dark:text-achtung-green-light">
         Ímpeto
@@ -164,17 +164,17 @@ export default function CharacterSheet({ characterName, isMaster = false, isNpc 
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium whitespace-nowrap
+            className={`flex items-center justify-center gap-1.5 px-3 py-2.5 flex-1 sm:flex-none sm:px-4 text-xs sm:text-sm font-medium
                         transition-all border-b-2 -mb-px ${
               activeTab === tab.id
                 ? 'border-achtung-green text-achtung-green-dark dark:text-achtung-green-light'
                 : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
             }`}
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={tab.icon} />
             </svg>
-            {tab.label}
+            <span className="hidden sm:inline">{tab.label}</span>
           </button>
         ))}
       </div>

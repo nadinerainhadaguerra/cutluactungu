@@ -213,8 +213,8 @@ export default function SheetPage1({ character, updateField, updateCharacter }) 
   return (
     <div className="space-y-6">
       {/* Row 1: Nome, Nacionalidade, Posto */}
-      <div className="grid grid-cols-1 sm:grid-cols-6 gap-3">
-        <div className="sm:col-span-3">
+      <div className="grid grid-cols-1 md:grid-cols-6 gap-3">
+        <div className="md:col-span-3">
           <SectionHeader>Nome</SectionHeader>
           <input
             type="text"
@@ -223,7 +223,7 @@ export default function SheetPage1({ character, updateField, updateCharacter }) 
             className="sheet-input mt-2 font-semibold text-lg bg-gray-100 dark:bg-gray-800 cursor-not-allowed"
           />
         </div>
-        <div className="sm:col-span-2 relative" ref={natRef}>
+        <div className="md:col-span-2 relative" ref={natRef}>
           <SectionHeader>Nacionalidade</SectionHeader>
           <input
             type="text"
@@ -271,7 +271,7 @@ export default function SheetPage1({ character, updateField, updateCharacter }) 
             </ul>
           )}
         </div>
-        <div className="sm:col-span-1">
+        <div className="md:col-span-1">
           <SectionHeader>Posto</SectionHeader>
           <input
             type="text"
@@ -316,8 +316,8 @@ export default function SheetPage1({ character, updateField, updateCharacter }) 
       {/* Verdades Pessoais e Cicatrizes */}
       <div>
         <SectionHeader>Verdades Pessoais e Cicatrizes</SectionHeader>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 mt-2">
-          {character.personalTruths.map((truth, i) => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 mt-2">
+          {Array.from({ length: Math.max(5, character.personalTruths.length) }, (_, i) => character.personalTruths[i] ?? '').map((truth, i) => (
             <input
               key={i}
               type="text"
@@ -331,7 +331,7 @@ export default function SheetPage1({ character, updateField, updateCharacter }) 
       </div>
 
       {/* Middle Section: Estresse, Coragem/Armadura/Fortuna, Ferimentos */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {/* Estresse */}
         <div className="lg:col-span-1">
           <div className="flex items-center gap-2">
@@ -347,12 +347,12 @@ export default function SheetPage1({ character, updateField, updateCharacter }) 
             </button>
           </div>
           <div className="mt-2 space-y-1.5">
-            <div className="grid grid-cols-12 gap-1">
+            <div className="grid grid-cols-6 sm:grid-cols-12 gap-1">
               {character.stress.slice(0, 12).map((checked, i) => (
                 <StressBox key={i} checked={checked} onClick={() => toggleStress(i)} />
               ))}
             </div>
-            <div className="grid grid-cols-12 gap-1">
+            <div className="grid grid-cols-6 sm:grid-cols-12 gap-1">
               {character.stress.slice(12, 24).map((checked, i) => (
                 <StressBox key={i + 12} checked={checked} onClick={() => toggleStress(i + 12)} />
               ))}

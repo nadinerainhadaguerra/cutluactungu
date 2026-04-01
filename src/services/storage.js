@@ -117,6 +117,29 @@ export const storage = {
     })
   },
 
+  // --- Complications ---
+  async setComplications(value) {
+    const clamped = Math.max(0, Math.min(6, value))
+    await setDoc(CONFIG_DOC, { complications: clamped }, { merge: true })
+  },
+
+  async addComplications(amount) {
+    const snap = await getDoc(CONFIG_DOC)
+    const current = snap.exists() && typeof snap.data().complications === 'number' ? snap.data().complications : 0
+    const clamped = Math.min(6, current + amount)
+    await setDoc(CONFIG_DOC, { complications: clamped }, { merge: true })
+  },
+
+  onComplicationsChanged(callback) {
+    return onSnapshot(CONFIG_DOC, snap => {
+      if (snap.exists() && typeof snap.data().complications === 'number') {
+        callback(snap.data().complications)
+      } else {
+        callback(0)
+      }
+    })
+  },
+
   onCharactersChanged(callback) {
     return onSnapshot(collection(db, CHARACTERS_COL), snap => {
       callback(snap.docs.map(d => d.data()))

@@ -288,6 +288,86 @@ function NpcEditPopup({ currentName, onSave, onClose }) {
   )
 }
 
+function CounterBar() {
+  const [momentum, setMomentum] = useState(0)
+  const [complications, setComplications] = useState(0)
+
+  useEffect(() => {
+    const unsubMomentum = storage.onMomentumChanged(setMomentum)
+    const unsubComplications = storage.onComplicationsChanged(setComplications)
+    return () => { unsubMomentum(); unsubComplications() }
+  }, [])
+
+  const changeMomentum = (delta) => storage.setMomentum(momentum + delta)
+  const changeComplications = (delta) => storage.setComplications(complications + delta)
+
+  return (
+    <div className="card px-5 py-3 mb-6 flex items-center gap-6 flex-wrap w-fit mx-auto">
+      {/* Ímpeto */}
+      <div className="flex items-center gap-3">
+        <span className="text-sm font-semibold text-achtung-green-dark dark:text-achtung-green-light whitespace-nowrap">
+          Ímpeto
+        </span>
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => changeMomentum(-1)}
+            disabled={momentum <= 0}
+            className="w-10 h-10 rounded-lg flex items-center justify-center font-bold text-lg
+                       bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700
+                       text-gray-600 dark:text-gray-300 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+          >
+            ▼
+          </button>
+          <span className="w-10 text-center text-xl font-bold text-achtung-green-dark dark:text-achtung-green-light">
+            {momentum}
+          </span>
+          <button
+            onClick={() => changeMomentum(1)}
+            disabled={momentum >= 6}
+            className="w-10 h-10 rounded-lg flex items-center justify-center font-bold text-lg
+                       bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700
+                       text-gray-600 dark:text-gray-300 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+          >
+            ▲
+          </button>
+        </div>
+      </div>
+
+      <div className="w-px h-8 bg-gray-200 dark:bg-gray-700" />
+
+      {/* Complicações */}
+      <div className="flex items-center gap-3">
+        <span className="text-sm font-semibold text-orange-600 dark:text-orange-400 whitespace-nowrap">
+          Complicações
+        </span>
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => changeComplications(-1)}
+            disabled={complications <= 0}
+            className="w-10 h-10 rounded-lg flex items-center justify-center font-bold text-lg
+                       bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700
+                       text-gray-600 dark:text-gray-300 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+          >
+            ▼
+          </button>
+          <span className="w-10 text-center text-xl font-bold text-orange-600 dark:text-orange-400">
+            {complications}
+          </span>
+          <button
+            onClick={() => changeComplications(1)}
+            disabled={complications >= 6}
+            className="w-10 h-10 rounded-lg flex items-center justify-center font-bold text-lg
+                       bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700
+                       text-gray-600 dark:text-gray-300 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+          >
+            ▲
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function MasterDashboard() {
   const [characters, setCharacters] = useState([])
   const [npcs, setNpcs] = useState([])
@@ -382,6 +462,8 @@ export default function MasterDashboard() {
           {npcs.length} NPC{npcs.length !== 1 ? 's' : ''}
         </p>
       </div>
+
+      <CounterBar />
 
       {/* Fichas de Jogadores */}
       <div className="mb-8">
