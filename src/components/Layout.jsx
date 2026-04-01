@@ -4,6 +4,7 @@ import { useTheme } from '../contexts/ThemeContext'
 import CharacterSheet from './CharacterSheet'
 import MasterDashboard from './MasterDashboard'
 import Chat from './Chat'
+import NotesPanel from './NotesPanel'
 
 function ThemeToggle() {
   const { isDark, toggleTheme } = useTheme()
@@ -29,6 +30,7 @@ function ThemeToggle() {
 export default function Layout() {
   const { user, logout } = useAuth()
   const [chatOpen, setChatOpen] = useState(false)
+  const [notesOpen, setNotesOpen] = useState(false)
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -44,6 +46,19 @@ export default function Layout() {
             <span className="text-sm text-white/80 hidden sm:inline">
               {user.type === 'master' ? 'Mestre' : user.name}
             </span>
+
+            {user.type === 'master' && (
+              <button
+                onClick={() => setNotesOpen(!notesOpen)}
+                className="p-2 rounded-lg hover:bg-white/20 transition-colors relative"
+                title="Notas"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </button>
+            )}
 
             <button
               onClick={() => setChatOpen(!chatOpen)}
@@ -71,13 +86,25 @@ export default function Layout() {
 
       {/* Main Content */}
       <div className="flex-1 flex relative">
-        <main className={`flex-1 transition-all duration-300 ${chatOpen ? 'lg:mr-80' : ''}`}>
+        <main className={`flex-1 transition-all duration-300 ${chatOpen ? 'lg:mr-80' : ''} ${notesOpen ? 'lg:ml-80' : ''}`}>
           {user.type === 'master' ? (
             <MasterDashboard />
           ) : (
             <CharacterSheet characterName={user.name} />
           )}
         </main>
+
+        {/* Notes Sidebar (left) - master only */}
+        {user.type === 'master' && (
+          <div
+            className={`fixed inset-y-0 left-0 z-30 w-full sm:w-96 lg:w-80 transform transition-transform
+                        duration-300 ${notesOpen ? 'translate-x-0' : '-translate-x-full'}
+                        top-[57px] bg-white dark:bg-gray-900 border-r border-achtung-green/20
+                        dark:border-achtung-green/10 shadow-2xl`}
+          >
+            <NotesPanel onClose={() => setNotesOpen(false)} />
+          </div>
+        )}
 
         {/* Chat Sidebar */}
         <div
@@ -97,6 +124,12 @@ export default function Layout() {
           <div
             className="fixed inset-0 bg-black/50 z-20 lg:hidden top-[57px]"
             onClick={() => setChatOpen(false)}
+          />
+        )}
+        {notesOpen && (
+          <div
+            className="fixed inset-0 bg-black/50 z-20 lg:hidden top-[57px]"
+            onClick={() => setNotesOpen(false)}
           />
         )}
       </div>

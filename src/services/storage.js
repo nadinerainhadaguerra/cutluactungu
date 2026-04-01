@@ -11,6 +11,7 @@ const CHARACTERS_COL = 'characters'
 const NPCS_COL = 'npcs'
 const MESSAGES_COL = 'messages'
 const CONFIG_DOC = doc(db, 'config', 'settings')
+const NOTES_COL = 'notes'
 
 export const storage = {
   // --- Config / Master Password ---
@@ -152,6 +153,31 @@ export const storage = {
   onNpcChanged(name, callback) {
     return onSnapshot(doc(db, NPCS_COL, name), snap => {
       callback(snap.exists() ? snap.data() : null)
+    })
+  },
+
+  // --- Notes ---
+  async createNote(title, description, tag) {
+    await addDoc(collection(db, NOTES_COL), {
+      title,
+      description,
+      tag: tag || '',
+      createdAt: new Date().toISOString(),
+    })
+  },
+
+  async updateNote(docId, title, description, tag) {
+    await updateDoc(doc(db, NOTES_COL, docId), { title, description, tag: tag || '' })
+  },
+
+  async deleteNote(docId) {
+    await deleteDoc(doc(db, NOTES_COL, docId))
+  },
+
+  onNotesChanged(callback) {
+    const q = query(collection(db, NOTES_COL), orderBy('createdAt', 'desc'))
+    return onSnapshot(q, snap => {
+      callback(snap.docs.map(d => ({ ...d.data(), _id: d.id })))
     })
   },
 }

@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { useTheme } from '../contexts/ThemeContext'
 import { storage } from '../services/storage'
@@ -28,7 +29,9 @@ function ThemeToggleSmall() {
 function SearchableDropdown({ options, value, onChange, placeholder }) {
   const [isOpen, setIsOpen] = useState(false)
   const [search, setSearch] = useState('')
-  const ref = useRef(null)
+  const [dropdownStyle, setDropdownStyle] = useState({})
+  const inputRef = useRef(null)
+  const dropdownRef = useRef(null)
 
   const filtered = options.filter(opt =>
     opt.toLowerCase().includes(search.toLowerCase())
@@ -36,7 +39,10 @@ function SearchableDropdown({ options, value, onChange, placeholder }) {
 
   useEffect(() => {
     function handleClick(e) {
-      if (ref.current && !ref.current.contains(e.target)) {
+      if (
+        inputRef.current && !inputRef.current.contains(e.target) &&
+        dropdownRef.current && !dropdownRef.current.contains(e.target)
+      ) {
         setIsOpen(false)
       }
     }
@@ -44,9 +50,24 @@ function SearchableDropdown({ options, value, onChange, placeholder }) {
     return () => document.removeEventListener('mousedown', handleClick)
   }, [])
 
+  const openDropdown = () => {
+    if (inputRef.current) {
+      const rect = inputRef.current.getBoundingClientRect()
+      setDropdownStyle({
+        position: 'fixed',
+        top: rect.bottom + 4,
+        left: rect.left,
+        width: rect.width,
+      })
+    }
+    setIsOpen(true)
+    setSearch('')
+  }
+
   return (
-    <div ref={ref} className="relative">
+    <div>
       <input
+        ref={inputRef}
         type="text"
         className="w-full px-4 py-2.5 rounded-lg border-2 border-achtung-green-muted/50
                    dark:border-achtung-green/30 bg-white dark:bg-gray-800
@@ -56,16 +77,17 @@ function SearchableDropdown({ options, value, onChange, placeholder }) {
         value={isOpen ? search : value}
         onChange={e => {
           setSearch(e.target.value)
-          if (!isOpen) setIsOpen(true)
+          if (!isOpen) openDropdown()
         }}
-        onFocus={() => {
-          setIsOpen(true)
-          setSearch('')
-        }}
+        onFocus={openDropdown}
       />
-      {isOpen && (
-        <div className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border-2
-                        border-achtung-green/30 rounded-lg shadow-xl max-h-48 overflow-y-auto">
+      {isOpen && createPortal(
+        <div
+          ref={dropdownRef}
+          style={dropdownStyle}
+          className="z-[9999] bg-white dark:bg-gray-800 border-2
+                     border-achtung-green/30 rounded-lg shadow-xl max-h-48 overflow-y-auto"
+        >
           {filtered.length === 0 ? (
             <div className="px-4 py-2 text-gray-500 dark:text-gray-400 text-sm italic">
               Nenhuma ficha encontrada.
@@ -87,11 +109,14 @@ function SearchableDropdown({ options, value, onChange, placeholder }) {
               </button>
             ))
           )}
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   )
 }
+
+const IS_DEV = import.meta.env.DEV
 
 export default function LoginScreen() {
   const { loginAsMaster, loginAsPlayer, loginAsNewPlayer } = useAuth()
@@ -169,16 +194,18 @@ export default function LoginScreen() {
         <div className="card p-6">
           <div className="section-header mb-4">Mestre</div>
           <form onSubmit={handleMasterLogin} className="space-y-3">
-            <input
-              type="password"
-              placeholder="Senha do Mestre"
-              value={masterPassword}
-              onChange={e => setMasterPassword(e.target.value)}
-              className="w-full px-4 py-2.5 rounded-lg border-2 border-achtung-green-muted/50
-                         dark:border-achtung-green/30 bg-white dark:bg-gray-800
-                         text-gray-900 dark:text-gray-100 focus:border-achtung-green
-                         dark:focus:border-achtung-green-light outline-none transition-colors"
-            />
+            {!IS_DEV && (
+              <input
+                type="password"
+                placeholder="Senha do Mestre"
+                value={masterPassword}
+                onChange={e => setMasterPassword(e.target.value)}
+                className="w-full px-4 py-2.5 rounded-lg border-2 border-achtung-green-muted/50
+                           dark:border-achtung-green/30 bg-white dark:bg-gray-800
+                           text-gray-900 dark:text-gray-100 focus:border-achtung-green
+                           dark:focus:border-achtung-green-light outline-none transition-colors"
+              />
+            )}
             {masterError && (
               <p className="text-red-500 text-sm">{masterError}</p>
             )}
@@ -198,16 +225,18 @@ export default function LoginScreen() {
               onChange={setPlayerName}
               placeholder="Buscar personagem..."
             />
-            <input
-              type="password"
-              placeholder="Senha"
-              value={playerPassword}
-              onChange={e => setPlayerPassword(e.target.value)}
-              className="w-full px-4 py-2.5 rounded-lg border-2 border-achtung-green-muted/50
-                         dark:border-achtung-green/30 bg-white dark:bg-gray-800
-                         text-gray-900 dark:text-gray-100 focus:border-achtung-green
-                         dark:focus:border-achtung-green-light outline-none transition-colors"
-            />
+            {!IS_DEV && (
+              <input
+                type="password"
+                placeholder="Senha"
+                value={playerPassword}
+                onChange={e => setPlayerPassword(e.target.value)}
+                className="w-full px-4 py-2.5 rounded-lg border-2 border-achtung-green-muted/50
+                           dark:border-achtung-green/30 bg-white dark:bg-gray-800
+                           text-gray-900 dark:text-gray-100 focus:border-achtung-green
+                           dark:focus:border-achtung-green-light outline-none transition-colors"
+              />
+            )}
             {playerError && (
               <p className="text-red-500 text-sm">{playerError}</p>
             )}
@@ -231,16 +260,18 @@ export default function LoginScreen() {
                          text-gray-900 dark:text-gray-100 focus:border-achtung-green
                          dark:focus:border-achtung-green-light outline-none transition-colors"
             />
-            <input
-              type="password"
-              placeholder="Senha"
-              value={newPlayerPassword}
-              onChange={e => setNewPlayerPassword(e.target.value)}
-              className="w-full px-4 py-2.5 rounded-lg border-2 border-achtung-green-muted/50
-                         dark:border-achtung-green/30 bg-white dark:bg-gray-800
-                         text-gray-900 dark:text-gray-100 focus:border-achtung-green
-                         dark:focus:border-achtung-green-light outline-none transition-colors"
-            />
+            {!IS_DEV && (
+              <input
+                type="password"
+                placeholder="Senha"
+                value={newPlayerPassword}
+                onChange={e => setNewPlayerPassword(e.target.value)}
+                className="w-full px-4 py-2.5 rounded-lg border-2 border-achtung-green-muted/50
+                           dark:border-achtung-green/30 bg-white dark:bg-gray-800
+                           text-gray-900 dark:text-gray-100 focus:border-achtung-green
+                           dark:focus:border-achtung-green-light outline-none transition-colors"
+              />
+            )}
             {newPlayerError && (
               <p className="text-red-500 text-sm">{newPlayerError}</p>
             )}

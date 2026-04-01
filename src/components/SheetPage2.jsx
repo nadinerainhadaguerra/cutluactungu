@@ -146,7 +146,7 @@ function TalentCard({ talent, expanded, onToggle, onSendChat, onEdit, onDelete }
 function WeaponFormPopup({ weapon, onSave, onClose }) {
   const [form, setForm] = useState(weapon || {
     imageUrl: '', name: '', focus: '', range: '',
-    stress: '', barrage: '', size: '', qualities: '', restriction: '',
+    stress: '', barrage: '', size: '', qualities: '', restriction: '', weight: '',
   })
 
   const update = (field, value) => setForm(prev => ({ ...prev, [field]: value }))
@@ -161,6 +161,7 @@ function WeaponFormPopup({ weapon, onSave, onClose }) {
     { key: 'size', label: 'Tamanho', placeholder: 'Tamanho' },
     { key: 'qualities', label: 'Qualidade', placeholder: 'Qualidade' },
     { key: 'restriction', label: 'Nível de Restrição', placeholder: 'Nível de restrição' },
+    { key: 'weight', label: 'Peso (kg)', placeholder: 'Ex: 3.5' },
   ]
 
   const handleSubmit = () => {
@@ -227,6 +228,7 @@ function WeaponDetailPopup({ weapon, onClose, onDelete }) {
     { label: 'Tamanho', value: weapon.size },
     { label: 'Qualidade', value: weapon.qualities },
     { label: 'Nível de Restrição', value: weapon.restriction },
+    { label: 'Peso (kg)', value: weapon.weight },
   ]
 
   return (

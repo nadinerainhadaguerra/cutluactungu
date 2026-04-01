@@ -10,20 +10,20 @@ export function AuthProvider({ children }) {
   })
 
   const loginAsMaster = async (password) => {
-    const masterPassword = await storage.getMasterPassword()
-    if (password === masterPassword) {
-      const session = { type: 'master', name: 'Mestre' }
-      setUser(session)
-      sessionStorage.setItem('achtung_session', JSON.stringify(session))
-      return { success: true }
+    if (!import.meta.env.DEV) {
+      const masterPassword = await storage.getMasterPassword()
+      if (password !== masterPassword) return { success: false, error: 'Senha incorreta.' }
     }
-    return { success: false, error: 'Senha incorreta.' }
+    const session = { type: 'master', name: 'Mestre' }
+    setUser(session)
+    sessionStorage.setItem('achtung_session', JSON.stringify(session))
+    return { success: true }
   }
 
   const loginAsPlayer = async (characterName, password) => {
-    const correctPassword = await storage.getMasterPassword()
-    if (password !== correctPassword) {
-      return { success: false, error: 'Senha incorreta.' }
+    if (!import.meta.env.DEV) {
+      const correctPassword = await storage.getMasterPassword()
+      if (password !== correctPassword) return { success: false, error: 'Senha incorreta.' }
     }
     const character = await storage.getCharacter(characterName)
     if (!character) {
@@ -39,9 +39,9 @@ export function AuthProvider({ children }) {
     if (!characterName.trim()) {
       return { success: false, error: 'Digite um nome para o personagem.' }
     }
-    const correctPassword = await storage.getMasterPassword()
-    if (password !== correctPassword) {
-      return { success: false, error: 'Senha incorreta.' }
+    if (!import.meta.env.DEV) {
+      const correctPassword = await storage.getMasterPassword()
+      if (password !== correctPassword) return { success: false, error: 'Senha incorreta.' }
     }
     const exists = await storage.characterExists(characterName.trim())
     if (exists) {

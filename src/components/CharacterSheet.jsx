@@ -83,8 +83,8 @@ export default function CharacterSheet({ characterName, isMaster = false, isNpc 
   const saveTimerRef = useRef(null)
   const localUpdateRef = useRef(false)
 
-  const listenFn = isNpc ? storage.onNpcChanged.bind(storage) : storage.onCharacterChanged.bind(storage)
-  const saveFn = isNpc ? storage.saveNpc.bind(storage) : storage.saveCharacter.bind(storage)
+  const listenFn = isNpc ? storage.onNpcChanged : storage.onCharacterChanged
+  const saveFn = isNpc ? storage.saveNpc : storage.saveCharacter
 
   useEffect(() => {
     setActiveCharacterName(characterName)

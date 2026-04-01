@@ -489,11 +489,11 @@ export default function Chat({ senderName, onClose }) {
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-3 space-y-3">
         {messages.length === 0 && (
-          <div className="text-center text-gray-400 dark:text-gray-600 text-sm py-8">
+          <div className="text-center text-white text-sm py-8">
             <p>Nenhuma mensagem ainda.</p>
             <p className="mt-2 text-xs">
-              Use <code className="bg-gray-200 dark:bg-gray-700 px-1 rounded">/r 2d6+3</code> ou{' '}
-              <code className="bg-gray-200 dark:bg-gray-700 px-1 rounded">/roll 4d4+6</code> para rolar dados.
+              Use <code className="bg-white/20 px-1 rounded">/r 2d6+3</code> ou{' '}
+              <code className="bg-white/20 px-1 rounded">/roll 4d4+6</code> para rolar dados.
             </p>
             <p className="mt-1 text-xs">
               Ou clique no dado para rolagem do sistema 2d20.
