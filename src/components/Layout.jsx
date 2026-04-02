@@ -119,7 +119,7 @@ export default function Layout() {
 
       {/* Main Content */}
       <div className="flex-1 flex relative">
-        <main className={`flex-1 transition-all duration-300 ${chatOpen ? 'md:mr-80' : ''} ${(notesOpen || scenariosOpen) ? 'md:ml-80' : ''}`}>
+        <main className={`flex-1 transition-all duration-300 ${chatOpen ? 'md:mr-96' : ''} ${(notesOpen || scenariosOpen) ? 'md:ml-80' : ''}`}>
           {user.type === 'master' ? (
             <MasterDashboard />
           ) : (
@@ -158,7 +158,7 @@ export default function Layout() {
 
         {/* Chat Sidebar */}
         <div
-          className={`fixed inset-y-0 right-0 z-30 w-full md:w-80 transform transition-transform
+          className={`fixed inset-y-0 right-0 z-30 w-full md:w-96 transform transition-transform
                       duration-300 ${chatOpen ? 'translate-x-0' : 'translate-x-full'}
                       top-[57px] bg-white dark:bg-gray-900 border-l border-achtung-green/20
                       dark:border-achtung-green/10 shadow-2xl`}

@@ -52,7 +52,7 @@ function SystemRollMessage({ data }) {
 
       {data.purchasedDice > 0 && (
         <div className="text-xs text-purple-600 dark:text-purple-400">
-          Comprou {data.purchasedDice}d20 (-{data.purchasedDice} impeto)
+          Comprou {data.purchasedDice}d20 (-{data.purchasedDice * (data.purchasedDice + 1) / 2} impeto)
         </div>
       )}
 
@@ -135,13 +135,14 @@ function DiceRollPopup({ characterName, onClose, onRollComplete }) {
       return
     }
 
-    if (purchasedDice > momentum) {
-      setError(`Impeto insuficiente! Disponivel: ${momentum}, necessario: ${purchasedDice}.`)
+    const momentumCost = purchasedDice * (purchasedDice + 1) / 2
+    if (momentumCost > momentum) {
+      setError(`Impeto insuficiente! Disponivel: ${momentum}, necessario: ${momentumCost}.`)
       return
     }
 
     if (purchasedDice > 0) {
-      const newMomentum = momentum - purchasedDice
+      const newMomentum = momentum - momentumCost
       storage.setMomentum(newMomentum)
     }
 
@@ -240,7 +241,7 @@ function DiceRollPopup({ characterName, onClose, onRollComplete }) {
                 <label className="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">
                   Comprar d20s extras
                   <span className="font-normal text-xs text-gray-500 ml-1">
-                    (custo: 1 impeto cada | disponivel: {momentum})
+                    (custo: 1/2/3 impeto | disponivel: {momentum})
                   </span>
                 </label>
                 <div className="flex items-center gap-2">
@@ -252,15 +253,15 @@ function DiceRollPopup({ characterName, onClose, onRollComplete }) {
                         purchasedDice === n
                           ? 'bg-achtung-green text-white shadow-md scale-105'
                           : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
-                      } ${n > momentum ? 'opacity-40 cursor-not-allowed' : ''}`}
-                      disabled={n > momentum}
+                      } ${n * (n + 1) / 2 > momentum ? 'opacity-40 cursor-not-allowed' : ''}`}
+                      disabled={n * (n + 1) / 2 > momentum}
                     >
                       {n}
                     </button>
                   ))}
                   {purchasedDice > 0 && (
                     <span className="text-xs text-purple-600 dark:text-purple-400 ml-2">
-                      -{purchasedDice} impeto
+                      -{purchasedDice * (purchasedDice + 1) / 2} impeto
                     </span>
                   )}
                 </div>
@@ -459,16 +460,6 @@ export default function Chat({ senderName, onClose }) {
           <span className="font-gothic text-lg text-white">Chat & Dados</span>
         </div>
         <div className="flex items-center gap-1">
-          {/* Dice Roll Button */}
-          <button
-            onClick={() => setShowDicePopup(true)}
-            className="p-2 rounded hover:bg-white/20 transition-colors text-white/70 hover:text-white"
-            title="Rolagem de dados"
-          >
-            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM7.5 18c-.83 0-1.5-.67-1.5-1.5S6.67 15 7.5 15s1.5.67 1.5 1.5S8.33 18 7.5 18zm0-9C6.67 9 6 8.33 6 7.5S6.67 6 7.5 6 9 6.67 9 7.5 8.33 9 7.5 9zm4.5 4.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm4.5 4.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm0-9c-.83 0-1.5-.67-1.5-1.5S15.67 6 16.5 6s1.5.67 1.5 1.5S17.33 9 16.5 9z"/>
-            </svg>
-          </button>
           {/* Clear Chat Button */}
           <button
             onClick={clearChat}
@@ -545,6 +536,19 @@ export default function Chat({ senderName, onClose }) {
       {/* Input */}
       <form onSubmit={sendMessage} className="p-3 border-t border-achtung-green/20 dark:border-achtung-green/10">
         <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={() => setShowDicePopup(true)}
+            className="p-2 rounded-lg border-2 border-achtung-green-muted/30 dark:border-achtung-green/20
+                       bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400
+                       hover:border-achtung-green transition-colors"
+            title="Rolagem de dados"
+          >
+            <svg className="w-5 h-5" viewBox="0 0 24 24">
+              <path className="text-achtung-green" fill="currentColor" d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/>
+              <path fill="#000" d="M7.5 18c-.83 0-1.5-.67-1.5-1.5S6.67 15 7.5 15s1.5.67 1.5 1.5S8.33 18 7.5 18zm0-9C6.67 9 6 8.33 6 7.5S6.67 6 7.5 6 9 6.67 9 7.5 8.33 9 7.5 9zm4.5 4.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm4.5 4.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm0-9c-.83 0-1.5-.67-1.5-1.5S15.67 6 16.5 6s1.5.67 1.5 1.5S17.33 9 16.5 9z"/>
+            </svg>
+          </button>
           <input
             ref={inputRef}
             type="text"
