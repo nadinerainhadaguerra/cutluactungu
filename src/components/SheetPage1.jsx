@@ -471,10 +471,10 @@ export default function SheetPage1({ character, updateField, updateCharacter }) 
                 key={i}
                 onClick={() => toggleWound(i)}
                 className={`w-20 h-20 border-2 border-achtung-green-dark dark:border-achtung-green rounded cursor-pointer
-                  transition-all duration-150 flex items-center justify-center
-                  ${checked ? 'stress-box-checked' : 'stress-box-unchecked'}`}
+                  transition-all duration-150 overflow-hidden
+                  ${checked ? '' : 'stress-box-unchecked'}`}
               >
-                {checked && <span className="text-white text-2xl font-bold">✕</span>}
+                {checked && <img src="/cutulocaveira.png" alt="ferimento" className="w-full h-full object-cover wound-image-fade" />}
               </div>
             ))}
           </div>
