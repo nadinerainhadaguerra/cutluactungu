@@ -304,7 +304,7 @@ function CounterBar() {
   return (
     <div className="card px-5 py-3 mb-6 flex items-center gap-6 flex-wrap w-fit mx-auto">
       {/* Ímpeto */}
-      <div className="flex items-center gap-3">
+      <div className="flex flex-col items-center gap-1">
         <span className="text-sm font-semibold text-achtung-green-dark dark:text-achtung-green-light whitespace-nowrap">
           Ímpeto
         </span>
@@ -336,7 +336,7 @@ function CounterBar() {
       <div className="w-px h-8 bg-gray-200 dark:bg-gray-700" />
 
       {/* Complicações */}
-      <div className="flex items-center gap-3">
+      <div className="flex flex-col items-center gap-1">
         <span className="text-sm font-semibold text-orange-600 dark:text-orange-400 whitespace-nowrap">
           Complicações
         </span>

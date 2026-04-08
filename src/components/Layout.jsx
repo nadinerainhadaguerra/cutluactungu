@@ -8,6 +8,7 @@ import NotesPanel from './NotesPanel'
 import ScenariosPanel from './ScenariosPanel'
 import ScenarioViewer from './ScenarioViewer'
 import ScenarioDisplay from './ScenarioDisplay'
+import TestsPopup from './TestsPopup'
 import { storage } from '../services/storage'
 
 function ThemeToggle() {
@@ -36,6 +37,7 @@ export default function Layout() {
   const [chatOpen, setChatOpen] = useState(false)
   const [notesOpen, setNotesOpen] = useState(false)
   const [scenariosOpen, setScenariosOpen] = useState(false)
+  const [testsOpen, setTestsOpen] = useState(false)
   const [viewingScenario, setViewingScenario] = useState(null)
   const [activeScenario, setActiveScenario] = useState(null)
 
@@ -70,16 +72,25 @@ export default function Layout() {
             </span>
 
             {user.type === 'master' && (
-              <button
-                onClick={toggleScenarios}
-                className="p-2 rounded-lg hover:bg-white/20 transition-colors relative"
-                title="Cenários da Sessão"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-              </button>
+              <>
+                <button
+                  onClick={toggleScenarios}
+                  className="p-2 rounded-lg hover:bg-white/20 transition-colors relative"
+                  title="Cenários da Sessão"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                </button>
+                <button
+                  onClick={() => setTestsOpen(prev => !prev)}
+                  className="p-2 rounded-lg hover:bg-white/20 transition-colors relative"
+                  title="Testes"
+                >
+                  <img src="/dadocutulo.png" className="w-5 h-5 object-contain" alt="Testes" />
+                </button>
+              </>
             )}
 
             <button
@@ -205,6 +216,11 @@ export default function Layout() {
           activeScenario={activeScenario}
           isTargeted={!!(activeScenario?.shownTo?.includes(user.name) && activeScenario?.imageUrl)}
         />
+      )}
+
+      {/* Tests Popup - master only */}
+      {testsOpen && user.type === 'master' && (
+        <TestsPopup onClose={() => setTestsOpen(false)} />
       )}
     </div>
   )

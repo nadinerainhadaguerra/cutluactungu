@@ -2,7 +2,7 @@ import { db } from './firebase'
 import {
   doc, getDoc, setDoc, updateDoc, deleteDoc,
   collection, getDocs, addDoc, query, orderBy, where, writeBatch,
-  onSnapshot,
+  onSnapshot, deleteField,
 } from 'firebase/firestore'
 import { createCharacterTemplate } from '../utils/characterTemplate'
 
@@ -14,6 +14,7 @@ const CONFIG_DOC = doc(db, 'config', 'settings')
 const NOTES_COL = 'notes'
 const SCENARIOS_COL = 'scenarios'
 const ACTIVE_SCENARIO_DOC = doc(db, 'config', 'activeScenario')
+const ACTIVE_TESTS_DOC = doc(db, 'config', 'activeTests')
 
 export const storage = {
   // --- Config / Master Password ---
@@ -246,6 +247,32 @@ export const storage = {
   onActiveScenarioChanged(callback) {
     return onSnapshot(ACTIVE_SCENARIO_DOC, snap => {
       callback(snap.exists() ? snap.data() : null)
+    })
+  },
+
+  // --- Active Tests ---
+  async setActiveTest(playerName, testData) {
+    await setDoc(ACTIVE_TESTS_DOC, { [playerName]: testData }, { merge: true })
+  },
+
+  async clearActiveTest(playerName) {
+    try {
+      await updateDoc(ACTIVE_TESTS_DOC, { [playerName]: deleteField() })
+    } catch {
+      // Document may not exist yet
+    }
+  },
+
+  onActiveTestsChanged(callback) {
+    return onSnapshot(ACTIVE_TESTS_DOC, snap => {
+      callback(snap.exists() ? snap.data() : {})
+    })
+  },
+
+  onPlayerTestChanged(playerName, callback) {
+    return onSnapshot(ACTIVE_TESTS_DOC, snap => {
+      const data = snap.exists() ? snap.data() : {}
+      callback(data[playerName] || null)
     })
   },
 }

@@ -4,6 +4,7 @@ import { useSelection } from '../contexts/SelectionContext'
 import SheetPage1 from './SheetPage1'
 import SheetPage2 from './SheetPage2'
 import SheetPage3 from './SheetPage3'
+import PlayerTestPopup from './PlayerTestPopup'
 
 const TABS = [
   { id: 1, label: 'Personagem', icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' },
@@ -79,12 +80,20 @@ function MomentumCounter() {
 export default function CharacterSheet({ characterName, isMaster = false, isNpc = false }) {
   const [character, setCharacter] = useState(null)
   const [activeTab, setActiveTab] = useState(1)
+  const [activeTest, setActiveTest] = useState(null)
   const { setActiveCharacterName } = useSelection()
   const saveTimerRef = useRef(null)
   const localUpdateRef = useRef(false)
 
   const listenFn = isNpc ? storage.onNpcChanged : storage.onCharacterChanged
   const saveFn = isNpc ? storage.saveNpc : storage.saveCharacter
+
+  // Listen for active test (only for real players, not NPC/master views)
+  useEffect(() => {
+    if (isMaster || isNpc) return
+    const unsub = storage.onPlayerTestChanged(characterName, setActiveTest)
+    return () => unsub()
+  }, [characterName, isMaster, isNpc])
 
   useEffect(() => {
     setActiveCharacterName(characterName)
@@ -207,6 +216,14 @@ export default function CharacterSheet({ characterName, isMaster = false, isNpc 
       <p className="text-center text-xs text-gray-400 dark:text-gray-600 mt-4">
         TM &amp; &copy; 2021 Modiphius Entertainment Ltd.
       </p>
+
+      {/* Player Test Popup */}
+      {activeTest && character && !isMaster && !isNpc && (
+        <PlayerTestPopup
+          character={character}
+          test={activeTest}
+        />
+      )}
     </div>
   )
 }
