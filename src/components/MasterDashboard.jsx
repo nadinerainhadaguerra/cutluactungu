@@ -173,6 +173,51 @@ function ResetPasswordPopup({ characterName, onSave, onClose }) {
   )
 }
 
+function DeleteConfirmPopup({ name, onConfirm, onClose }) {
+  return (
+    <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
+         onClick={onClose}>
+      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-sm
+                      border-2 border-red-500/30"
+           onClick={e => e.stopPropagation()}>
+        <div className="flex items-center justify-between px-5 py-4 border-b border-red-500/20
+                        bg-red-600 text-white rounded-t-2xl">
+          <span className="font-gothic text-xl">Apagar Ficha</span>
+          <button onClick={onClose} className="p-1 hover:bg-white/20 rounded transition-colors">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        <div className="p-5 space-y-5">
+          <p className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed">
+            Deseja realmente apagar a ficha <span className="font-bold text-gray-900 dark:text-white">"{name}"</span>?
+            <br />
+            <span className="text-red-500 text-xs mt-1 block">Esta ação não pode ser desfeita.</span>
+          </p>
+          <div className="flex gap-3">
+            <button
+              onClick={onClose}
+              className="flex-1 py-2.5 rounded-xl font-semibold text-sm transition-all
+                         bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700
+                         text-gray-700 dark:text-gray-300"
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={onConfirm}
+              className="flex-1 py-2.5 rounded-xl font-bold text-sm transition-all shadow-lg
+                         bg-red-500 hover:bg-red-600 text-white hover:shadow-xl active:scale-[0.98]"
+            >
+              Apagar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function NpcNamePopup({ onSave, onClose }) {
   const [name, setName] = useState('')
 
@@ -375,6 +420,8 @@ export default function MasterDashboard() {
   const [selectedNpc, setSelectedNpc] = useState(null)
   const [showNpcPopup, setShowNpcPopup] = useState(false)
   const [editingNpc, setEditingNpc] = useState(null)
+  const [deletingChar, setDeletingChar] = useState(null)
+  const [deletingNpc, setDeletingNpc] = useState(null)
 
   useEffect(() => {
     const unsubChars = storage.onCharactersChanged(setCharacters)
@@ -397,13 +444,13 @@ export default function MasterDashboard() {
   }
 
   const deleteNpc = async (name) => {
-    if (!confirm(`Excluir o NPC "${name}"? Esta ação não pode ser desfeita.`)) return
     await storage.deleteNpc(name)
+    setDeletingNpc(null)
   }
 
   const deleteCharacter = async (name) => {
-    if (!confirm(`Excluir a ficha de "${name}"? Esta ação não pode ser desfeita.`)) return
     await storage.deleteCharacter(name)
+    setDeletingChar(null)
   }
 
   // Viewing a player character sheet
@@ -490,7 +537,7 @@ export default function MasterDashboard() {
                 key={char.name}
                 char={char}
                 onClick={() => setSelectedCharacter(char.name)}
-                onDelete={() => deleteCharacter(char.name)}
+                onDelete={() => setDeletingChar(char.name)}
               />
             ))}
           </div>
@@ -531,7 +578,7 @@ export default function MasterDashboard() {
                 char={npc}
                 onClick={() => setSelectedNpc(npc.name)}
                 onEdit={() => setEditingNpc(npc.name)}
-                onDelete={() => deleteNpc(npc.name)}
+                onDelete={() => setDeletingNpc(npc.name)}
               />
             ))}
           </div>
@@ -552,6 +599,24 @@ export default function MasterDashboard() {
           currentName={editingNpc}
           onSave={(newName) => renameNpc(editingNpc, newName)}
           onClose={() => setEditingNpc(null)}
+        />
+      )}
+
+      {/* Delete Character Confirm */}
+      {deletingChar && (
+        <DeleteConfirmPopup
+          name={deletingChar}
+          onConfirm={() => deleteCharacter(deletingChar)}
+          onClose={() => setDeletingChar(null)}
+        />
+      )}
+
+      {/* Delete NPC Confirm */}
+      {deletingNpc && (
+        <DeleteConfirmPopup
+          name={deletingNpc}
+          onConfirm={() => deleteNpc(deletingNpc)}
+          onClose={() => setDeletingNpc(null)}
         />
       )}
 
