@@ -729,7 +729,7 @@ export default function SheetPage2({ character, updateCharacter, isMaster = fals
   const [detailWeaponIdx, setDetailWeaponIdx] = useState(null)
   const [showTalentForm, setShowTalentForm] = useState(false)
   const [editingTalentIdx, setEditingTalentIdx] = useState(null)
-  const [expandedTalent, setExpandedTalent] = useState(null)
+  const [expandedTalents, setExpandedTalents] = useState(new Set())
   const [showTalentCatalog, setShowTalentCatalog] = useState(false)
   const [showWeaponCatalog, setShowWeaponCatalog] = useState(false)
   const { activeCharacterName } = useSelection()
@@ -787,7 +787,7 @@ export default function SheetPage2({ character, updateCharacter, isMaster = fals
       ...prev,
       talents: prev.talents.filter((_, i) => i !== index),
     }))
-    if (expandedTalent === index) setExpandedTalent(null)
+    setExpandedTalents(prev => { const s = new Set(prev); s.delete(index); return s })
   }
 
   const sendTalentToChat = async (talent) => {
@@ -945,8 +945,8 @@ export default function SheetPage2({ character, updateCharacter, isMaster = fals
               <TalentCard
                 key={talent._idx}
                 talent={talent}
-                expanded={expandedTalent === talent._idx}
-                onToggle={() => setExpandedTalent(expandedTalent === talent._idx ? null : talent._idx)}
+                expanded={expandedTalents.has(talent._idx)}
+                onToggle={() => setExpandedTalents(prev => { const s = new Set(prev); s.has(talent._idx) ? s.delete(talent._idx) : s.add(talent._idx); return s })}
                 onSendChat={() => sendTalentToChat(talent)}
                 onEdit={() => setEditingTalentIdx(talent._idx)}
                 onDelete={() => deleteTalent(talent._idx)}
