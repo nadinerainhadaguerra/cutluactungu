@@ -7,6 +7,7 @@ export default function PlayerTestPopup({ character, test }) {
   const [momentum, setMomentum] = useState(0)
   const [purchasedDice, setPurchasedDice] = useState(0)
   const [selectedTruths, setSelectedTruths] = useState([])
+  const [useFortune, setUseFortune] = useState(false)
   const [minimized, setMinimized] = useState(false)
   const { pos, onDragStart } = useDraggable({
     x: Math.max(0, Math.floor((window.innerWidth - 448) / 2)),
@@ -30,6 +31,7 @@ export default function PlayerTestPopup({ character, test }) {
     : false
 
   const truths = (character.personalTruths || []).filter(t => t && t.trim() !== '')
+  const fortune = parseInt(character.fortune) || 0
   const totalDice = 2 + purchasedDice + selectedTruths.length
   const momentumCost = purchasedDice * (purchasedDice + 1) / 2
 
@@ -41,15 +43,28 @@ export default function PlayerTestPopup({ character, test }) {
 
   const handleRoll = async () => {
     if (momentumCost > momentum) return
+    if (useFortune && fortune <= 0) return
+
+    if (useFortune) {
+      await storage.spendFortune(character.name)
+    }
 
     const dice = []
     for (let i = 0; i < totalDice; i++) {
-      const value = Math.floor(Math.random() * 20) + 1
-      dice.push({ value, success: value <= target })
+      let value
+      if (useFortune && i === 0) {
+        value = 1
+      } else {
+        value = Math.floor(Math.random() * 20) + 1
+      }
+      dice.push({ value, success: value === 1 || value <= target })
     }
 
-    const successCount = dice.filter(d => d.success).length
-    const totalSuccesses = hasFocus ? successCount * 2 : successCount
+    const criticals = dice.filter(d => d.value === 1).length
+    const normalSuccesses = dice.filter(d => d.success && d.value !== 1).length
+    const totalSuccesses = hasFocus
+      ? normalSuccesses * 2 + criticals * 3
+      : normalSuccesses + criticals * 2
     const totalComplications = dice.filter(d => d.value === 20).length
 
     const excess = Math.max(0, totalSuccesses - test.requiredSuccesses)
@@ -73,6 +88,7 @@ export default function PlayerTestPopup({ character, test }) {
       truthsUsed: [...selectedTruths],
       requiredSuccesses: test.requiredSuccesses,
       excessToMomentum: excess,
+      usedFortune: useFortune,
     }
     const message = {
       id: Date.now().toString(),
@@ -103,16 +119,27 @@ export default function PlayerTestPopup({ character, test }) {
           <img src="/dadocutulo.png" className="w-5 h-5 object-contain" alt="teste" />
           <span className="font-gothic text-lg">Teste do Mestre</span>
         </div>
-        <button
-          onClick={() => setMinimized(prev => !prev)}
-          className="p-1.5 hover:bg-white/20 rounded transition-colors"
-          title={minimized ? 'Expandir' : 'Minimizar'}
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-              d={minimized ? 'M5 15l7-7 7 7' : 'M19 9l-7 7-7-7'} />
-          </svg>
-        </button>
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => setMinimized(prev => !prev)}
+            className="p-1.5 hover:bg-white/20 rounded transition-colors"
+            title={minimized ? 'Expandir' : 'Minimizar'}
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                d={minimized ? 'M5 15l7-7 7 7' : 'M19 9l-7 7-7-7'} />
+            </svg>
+          </button>
+          <button
+            onClick={() => storage.clearActiveTest(character.name)}
+            className="p-1.5 hover:bg-white/20 rounded transition-colors"
+            title="Fechar"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
       </div>
 
       {/* Body */}
@@ -226,11 +253,25 @@ export default function PlayerTestPopup({ character, test }) {
               </span>
             </div>
 
+            {/* Usar Fortuna */}
+            {fortune > 0 && (
+              <label className="flex items-center gap-1.5 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={useFortune}
+                  onChange={e => setUseFortune(e.target.checked)}
+                  className="w-4 h-4 accent-amber-500"
+                />
+                <img src="/fortunacutulo.png" className="w-5 h-5 object-contain" alt="" />
+                <span className="text-sm font-semibold text-amber-600 dark:text-amber-400">-1</span>
+              </label>
+            )}
+
             <button
               onClick={handleRoll}
-              disabled={momentumCost > momentum}
+              disabled={momentumCost > momentum || (useFortune && fortune <= 0)}
               className={`w-full py-3 rounded-xl font-bold text-lg transition-all shadow-lg ${
-                momentumCost <= momentum
+                momentumCost <= momentum && (!useFortune || fortune > 0)
                   ? 'bg-achtung-green hover:bg-achtung-green-dark text-white hover:shadow-xl active:scale-[0.98]'
                   : 'bg-gray-300 dark:bg-gray-700 text-gray-500 cursor-not-allowed'
               }`}

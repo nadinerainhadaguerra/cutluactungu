@@ -5,6 +5,115 @@ import SheetPage1 from './SheetPage1'
 import SheetPage2 from './SheetPage2'
 import SheetPage3 from './SheetPage3'
 import PlayerTestPopup from './PlayerTestPopup'
+import CharacterCreationWizard from './CharacterCreationWizard'
+import { TALENTOS } from '../utils/bookData'
+
+const ALL_TALENT_KEYWORDS = [...new Set(TALENTOS.flatMap(t => t.palavrasChave))].sort()
+const ALL_TRADITIONS = ['Celta', 'Rúnico', 'Psíquico']
+
+function MasterConfigPopup({ character, updateCharacter, onClose }) {
+  const perms = character.masterPermissions || { extraTalentKeywords: [], spellTraditions: [] }
+  const [extraKws, setExtraKws] = useState(perms.extraTalentKeywords || [])
+  const [spellTraditions, setSpellTraditions] = useState(perms.spellTraditions || [])
+
+  const toggleKw = (kw) =>
+    setExtraKws(prev => prev.includes(kw) ? prev.filter(k => k !== kw) : [...prev, kw])
+
+  const toggleTrad = (t) =>
+    setSpellTraditions(prev => prev.includes(t) ? prev.filter(x => x !== t) : [...prev, t])
+
+  const save = () => {
+    updateCharacter(prev => ({
+      ...prev,
+      masterPermissions: { extraTalentKeywords: extraKws, spellTraditions },
+    }))
+    onClose()
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black/60 z-[60] flex items-center justify-center p-4"
+         onClick={onClose}>
+      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-lg max-h-[80vh]
+                      flex flex-col border-2 border-amber-500/30"
+           onClick={e => e.stopPropagation()}>
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 py-4 border-b border-amber-500/20
+                        bg-amber-700 text-white rounded-t-2xl shrink-0">
+          <div className="flex items-center gap-2">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            <span className="font-gothic text-lg">Permissões — {character.name}</span>
+          </div>
+          <button onClick={onClose} className="p-1 hover:bg-white/20 rounded transition-colors">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Content */}
+        <div className="overflow-y-auto flex-1 p-4 space-y-5">
+          {/* Spell Traditions */}
+          <div>
+            <h3 className="text-sm font-semibold text-amber-700 dark:text-amber-400 mb-1">
+              Tradições de Magia Liberadas
+            </h3>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+              Permite que este personagem acesse o catálogo de magias das tradições selecionadas.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {ALL_TRADITIONS.map(t => (
+                <button key={t} onClick={() => toggleTrad(t)}
+                  className={`text-xs px-3 py-1.5 rounded-full border-2 font-semibold transition-colors
+                    ${spellTraditions.includes(t)
+                      ? 'bg-amber-500 border-amber-500 text-white'
+                      : 'border-amber-400/40 text-gray-600 dark:text-gray-300 hover:border-amber-400'}`}>
+                  {t}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Extra Talent Keywords */}
+          <div>
+            <h3 className="text-sm font-semibold text-amber-700 dark:text-amber-400 mb-1">
+              Palavras-Chave de Talentos Extras
+            </h3>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+              Permite acesso a talentos que o personagem normalmente não teria.
+            </p>
+            <div className="flex flex-wrap gap-1.5">
+              {ALL_TALENT_KEYWORDS.map(kw => (
+                <button key={kw} onClick={() => toggleKw(kw)}
+                  className={`text-xs px-2 py-1 rounded-full border transition-colors
+                    ${extraKws.includes(kw)
+                      ? 'bg-amber-500 border-amber-500 text-white'
+                      : 'border-amber-400/30 text-gray-600 dark:text-gray-300 hover:border-amber-400'}`}>
+                  {kw}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="px-4 py-3 border-t border-amber-500/20 shrink-0 flex justify-end gap-2">
+          <button onClick={onClose}
+            className="px-4 py-2 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors">
+            Cancelar
+          </button>
+          <button onClick={save}
+            className="px-4 py-2 text-sm font-semibold bg-amber-600 hover:bg-amber-700 text-white rounded-lg transition-colors">
+            Salvar Permissões
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
 
 const TABS = [
   { id: 1, label: 'Personagem', icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' },
@@ -81,6 +190,8 @@ export default function CharacterSheet({ characterName, isMaster = false, isNpc 
   const [character, setCharacter] = useState(null)
   const [activeTab, setActiveTab] = useState(1)
   const [activeTest, setActiveTest] = useState(null)
+  const [showMasterConfig, setShowMasterConfig] = useState(false)
+  const [wizardHighlight, setWizardHighlight] = useState([])
   const { setActiveCharacterName } = useSelection()
   const saveTimerRef = useRef(null)
   const localUpdateRef = useRef(false)
@@ -148,7 +259,7 @@ export default function CharacterSheet({ characterName, isMaster = false, isNpc 
   return (
     <div className="max-w-5xl mx-auto p-2 sm:p-4 lg:p-6">
       {/* Sheet Header */}
-      <div className="text-center mb-4">
+      <div className="text-center mb-4 relative">
         <h1 className="font-gothic text-3xl sm:text-4xl text-achtung-green-dark dark:text-achtung-green-light">
           Achtung! Cthulhu
         </h1>
@@ -160,6 +271,21 @@ export default function CharacterSheet({ characterName, isMaster = false, isNpc 
             2d20
           </span>
         </div>
+        {isMaster && (
+          <button
+            onClick={() => setShowMasterConfig(true)}
+            title="Configurações do Mestre"
+            className="absolute right-0 top-1/2 -translate-y-1/2 p-2 rounded-lg
+                       text-amber-600 dark:text-amber-400 hover:bg-amber-500/10
+                       border border-amber-500/30 transition-colors"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+          </button>
+        )}
       </div>
 
       {/* Momentum Counter */}
@@ -172,7 +298,7 @@ export default function CharacterSheet({ characterName, isMaster = false, isNpc 
         {TABS.map(tab => (
           <button
             key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
+            onClick={() => { if (character.setupComplete !== false) setActiveTab(tab.id) }}
             className={`flex items-center justify-center gap-1.5 px-3 py-2.5 flex-1 sm:flex-none sm:px-4 text-xs sm:text-sm font-medium
                         transition-all border-b-2 -mb-px ${
               activeTab === tab.id
@@ -195,6 +321,7 @@ export default function CharacterSheet({ characterName, isMaster = false, isNpc 
             character={character}
             updateField={updateField}
             updateCharacter={updateCharacter}
+            wizardHighlight={wizardHighlight}
           />
         )}
         {activeTab === 2 && (
@@ -202,6 +329,7 @@ export default function CharacterSheet({ characterName, isMaster = false, isNpc 
             character={character}
             updateField={updateField}
             updateCharacter={updateCharacter}
+            isMaster={isMaster}
           />
         )}
         {activeTab === 3 && (
@@ -209,6 +337,7 @@ export default function CharacterSheet({ characterName, isMaster = false, isNpc 
             character={character}
             updateField={updateField}
             updateCharacter={updateCharacter}
+            isMaster={isMaster}
           />
         )}
       </div>
@@ -222,6 +351,28 @@ export default function CharacterSheet({ characterName, isMaster = false, isNpc 
         <PlayerTestPopup
           character={character}
           test={activeTest}
+        />
+      )}
+
+      {/* Master Config Popup */}
+      {showMasterConfig && character && (
+        <MasterConfigPopup
+          character={character}
+          updateCharacter={updateCharacter}
+          onClose={() => setShowMasterConfig(false)}
+        />
+      )}
+
+      {/* Character Creation Wizard */}
+      {character.setupComplete === false && (
+        <CharacterCreationWizard
+          character={character}
+          onComplete={(finalChar) => {
+            setWizardHighlight([])
+            setActiveTab(1)
+            updateCharacter(() => finalChar)
+          }}
+          onHighlightChange={setWizardHighlight}
         />
       )}
     </div>

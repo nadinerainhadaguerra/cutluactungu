@@ -275,4 +275,12 @@ export const storage = {
       callback(data[playerName] || null)
     })
   },
+
+  async spendFortune(characterName) {
+    const snap = await getDoc(doc(db, CHARACTERS_COL, characterName))
+    if (!snap.exists()) return
+    const current = parseInt(snap.data().fortune) || 0
+    if (current <= 0) return
+    await setDoc(doc(db, CHARACTERS_COL, characterName), { fortune: String(current - 1) }, { merge: true })
+  },
 }

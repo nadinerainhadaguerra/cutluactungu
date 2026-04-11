@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { useTheme } from '../contexts/ThemeContext'
+import { EncyclopediaButton } from './EncyclopediaPopup'
 import CharacterSheet from './CharacterSheet'
 import MasterDashboard from './MasterDashboard'
 import Chat from './Chat'
@@ -115,6 +116,7 @@ export default function Layout() {
               </svg>
             </button>
 
+            <EncyclopediaButton className="p-2 rounded-lg hover:bg-white/20 transition-colors" />
             <ThemeToggle />
 
             <button

@@ -1,6 +1,126 @@
 import { useState, useRef, useEffect } from 'react'
+import ReactDOM from 'react-dom'
 import { storage } from '../services/storage'
 import { parseDiceExpression } from '../utils/diceRoller'
+import { QUALIDADES_DESC } from '../utils/bookData'
+
+function ChallengeDiceMessage({ data }) {
+  // data: { weaponName, dice, totalDamage, totalEffects, count, efeito, barragem }
+  const [showTooltip, setShowTooltip] = useState(false)
+  const [tooltipPos, setTooltipPos] = useState({ top: 0, left: 0 })
+  const tooltipRef = useRef(null)
+  const buttonRef = useRef(null)
+
+  useEffect(() => {
+    if (!showTooltip) return
+    function handleClick(e) {
+      const inTooltip = tooltipRef.current && tooltipRef.current.contains(e.target)
+      const inButton = buttonRef.current && buttonRef.current.contains(e.target)
+      if (!inTooltip && !inButton) setShowTooltip(false)
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [showTooltip])
+
+  const handleToggle = () => {
+    if (!showTooltip && buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect()
+      setTooltipPos({ top: rect.top - 8, left: rect.left })
+    }
+    setShowTooltip(v => !v)
+  }
+
+  const qualityEntries = data.efeito
+    ? data.efeito.split(',').map(q => q.trim()).filter(Boolean)
+    : []
+
+  return (
+    <div className="bg-red-900/20 dark:bg-red-900/30 rounded-lg p-2 mt-1 border border-red-500/30">
+      <div className="flex items-center gap-1.5 mb-2">
+        <img src="/iconed6.png" alt="d6" className="w-4 h-4 object-contain" />
+        <span className="text-xs font-bold text-red-300">
+          ⚔ {data.weaponName} — {data.count}
+          <img src="/iconed6.png" alt="d6" className="inline w-3.5 h-3.5 mx-0.5 object-contain" />
+        </span>
+      </div>
+
+      {/* Individual dice */}
+      <div className="flex flex-wrap gap-1 mb-2">
+        {data.dice.map((d, i) => (
+          <div key={i}
+            className={`w-8 h-8 rounded flex flex-col items-center justify-center leading-none border
+              ${d.effect && d.damage > 0
+                ? 'bg-orange-500/30 border-orange-400/60 text-orange-200'
+                : d.effect
+                  ? 'bg-yellow-500/20 border-yellow-400/50 text-yellow-300'
+                  : 'bg-gray-700/60 border-gray-500/40 text-gray-200'}`}
+          >
+            {d.effect && <span className="text-[9px] font-bold">⚔</span>}
+            <span className="text-[11px] font-bold">{d.face}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* Totals */}
+      <div className="flex gap-3 text-xs items-center">
+        <span className="font-semibold text-white">
+          Dano: <span className="text-red-300 text-base font-bold">{data.totalDamage}</span>
+        </span>
+        {data.totalEffects > 0 && (
+          <>
+            <button
+              ref={buttonRef}
+              type="button"
+              onClick={handleToggle}
+              className="font-semibold text-yellow-300 hover:text-yellow-100 underline decoration-dotted cursor-pointer transition-colors"
+            >
+              Efeitos ⚔: <span className="text-base font-bold">{data.totalEffects}</span>
+            </button>
+            {showTooltip && ReactDOM.createPortal(
+              <div
+                ref={tooltipRef}
+                style={{
+                  position: 'fixed',
+                  top: tooltipPos.top,
+                  left: tooltipPos.left,
+                  transform: 'translateY(-100%)',
+                  zIndex: 9999,
+                }}
+                className="bg-gray-900 border border-yellow-500/40 rounded-lg p-2.5 shadow-2xl w-64 text-[10px]"
+              >
+                <div className="text-yellow-400 font-bold text-[11px] mb-2">Efeitos ⚔</div>
+                {qualityEntries.length > 0 ? (
+                  qualityEntries.map((q, i) => {
+                    const baseName = q.replace(/\s+\d+$/, '')
+                    const desc = QUALIDADES_DESC[q] || QUALIDADES_DESC[baseName]
+                    return (
+                      <div key={i} className="mb-2 last:mb-0">
+                        <span className="font-bold text-yellow-300">{q}</span>
+                        {desc
+                          ? <p className="text-gray-300 mt-0.5 leading-relaxed">{desc}</p>
+                          : <p className="text-gray-500 mt-0.5 italic">Sem descrição.</p>
+                        }
+                      </div>
+                    )
+                  })
+                ) : (
+                  <span className="text-gray-400 italic">Sem efeitos especiais.</span>
+                )}
+              </div>,
+              document.body
+            )}
+          </>
+        )}
+      </div>
+
+      {data.barragem && (
+        <div className="mt-1 text-[10px] text-blue-300">
+          Barragem disponível: {data.barragem}
+        </div>
+      )}
+    </div>
+  )
+}
 import { useSelection } from '../contexts/SelectionContext'
 
 function RollMessage({ rollData }) {
@@ -21,7 +141,7 @@ function RollMessage({ rollData }) {
   )
 }
 
-function SystemRollMessage({ data }) {
+function SystemRollMessage({ data, canReroll, onReroll }) {
   return (
     <div className="bg-gray-900/5 dark:bg-white/5 rounded-lg p-3 mt-1 space-y-2">
       <div className="flex flex-wrap gap-2 text-xs">
@@ -56,6 +176,20 @@ function SystemRollMessage({ data }) {
         </div>
       )}
 
+      {data.usedFortune && (
+        <div className="text-xs text-amber-600 dark:text-amber-400 flex items-center gap-1">
+          <img src="/fortunacutulo.png" className="w-3.5 h-3.5 object-contain" alt="" />
+          Usar Fortuna (1º dado = 1)
+        </div>
+      )}
+
+      {data.fortuneReroll && (
+        <div className="text-xs text-amber-600 dark:text-amber-400 flex items-center gap-1">
+          <img src="/fortunacutulo.png" className="w-3.5 h-3.5 object-contain" alt="" />
+          Rerolar com Fortuna
+        </div>
+      )}
+
       <div className="flex flex-wrap gap-2 mt-2">
         {data.dice.map((die, i) => (
           <div
@@ -64,11 +198,13 @@ function SystemRollMessage({ data }) {
               border-2 ${
               die.value === 20
                 ? 'border-orange-500 bg-orange-500/20 text-orange-500 shadow-md shadow-orange-500/20'
-                : die.success
-                  ? data.focus
-                    ? 'border-yellow-500 bg-yellow-500/20 text-yellow-500 shadow-md shadow-yellow-500/20'
-                    : 'border-green-500 bg-green-500/20 text-green-500'
-                  : 'border-red-400 bg-red-400/10 text-red-400'
+                : die.value === 1
+                  ? 'border-blue-500 bg-blue-500/20 text-blue-500 shadow-md shadow-blue-500/20'
+                  : die.success
+                    ? data.focus
+                      ? 'border-yellow-500 bg-yellow-500/20 text-yellow-500 shadow-md shadow-yellow-500/20'
+                      : 'border-green-500 bg-green-500/20 text-green-500'
+                    : 'border-red-400 bg-red-400/10 text-red-400'
             }`}
           >
             {die.value}
@@ -84,6 +220,19 @@ function SystemRollMessage({ data }) {
           Complicacoes: {data.totalComplications}
         </span>
       </div>
+
+      {canReroll && (
+        <button
+          onClick={onReroll}
+          className="flex items-center gap-1 mt-1 px-2.5 py-1.5 rounded-lg
+                     bg-amber-50 dark:bg-amber-900/20 border border-amber-400
+                     hover:bg-amber-100 dark:hover:bg-amber-900/40 transition-colors"
+          title="Rerolar com Fortuna"
+        >
+          <img src="/fortunacutulo.png" className="w-4 h-4 object-contain" alt="" />
+          <span className="text-xs font-semibold text-amber-700 dark:text-amber-400">-1</span>
+        </button>
+      )}
     </div>
   )
 }
@@ -97,6 +246,7 @@ function DiceRollPopup({ characterName, onClose, onRollComplete }) {
   const [error, setError] = useState('')
   const [momentum, setMomentum] = useState(0)
   const [character, setCharacter] = useState(null)
+  const [useFortune, setUseFortune] = useState(false)
 
   useEffect(() => {
     const unsub = storage.onMomentumChanged(setMomentum)
@@ -105,11 +255,13 @@ function DiceRollPopup({ characterName, onClose, onRollComplete }) {
 
   useEffect(() => {
     if (characterName) {
-      storage.getCharacter(characterName).then(setCharacter)
+      const unsub = storage.onCharacterChanged(characterName, setCharacter)
+      return () => unsub()
     }
   }, [characterName])
 
   const truths = character?.personalTruths?.filter(t => t.trim()) || []
+  const fortune = parseInt(character?.fortune) || 0
 
   const availableFocuses = selectedSkill?.allFocuses || []
 
@@ -127,11 +279,16 @@ function DiceRollPopup({ characterName, onClose, onRollComplete }) {
     )
   }
 
-  const handleRoll = () => {
+  const handleRoll = async () => {
     setError('')
 
     if (!canRoll) {
       setError('Selecione um atributo e uma pericia na ficha primeiro.')
+      return
+    }
+
+    if (useFortune && fortune <= 0) {
+      setError('Fortuna insuficiente!')
       return
     }
 
@@ -146,17 +303,30 @@ function DiceRollPopup({ characterName, onClose, onRollComplete }) {
       storage.setMomentum(newMomentum)
     }
 
+    if (useFortune) {
+      await storage.spendFortune(characterName)
+    }
+
     const dice = []
     for (let i = 0; i < totalDice; i++) {
-      const value = Math.floor(Math.random() * 20) + 1
+      let value
+      if (useFortune && i === 0) {
+        value = 1
+      } else {
+        value = Math.floor(Math.random() * 20) + 1
+      }
       dice.push({
         value,
-        success: value <= target,
+        success: value === 1 || value <= target,
       })
     }
 
-    const successCount = dice.filter(d => d.success).length
-    const totalSuccesses = selectedFocus !== 'nenhum' ? successCount * 2 : successCount
+    const hasFocus = selectedFocus !== 'nenhum'
+    const criticals = dice.filter(d => d.value === 1).length
+    const normalSuccesses = dice.filter(d => d.success && d.value !== 1).length
+    const totalSuccesses = hasFocus
+      ? normalSuccesses * 2 + criticals * 3
+      : normalSuccesses + criticals * 2
     const totalComplications = dice.filter(d => d.value === 20).length
 
     const rollData = {
@@ -169,6 +339,7 @@ function DiceRollPopup({ characterName, onClose, onRollComplete }) {
       totalComplications,
       purchasedDice,
       truthsUsed: [...selectedTruths],
+      usedFortune: useFortune,
     }
 
     setRollResults(rollData)
@@ -180,6 +351,7 @@ function DiceRollPopup({ characterName, onClose, onRollComplete }) {
     setPurchasedDice(0)
     setSelectedTruths([])
     setSelectedFocus('nenhum')
+    setUseFortune(false)
     setError('')
   }
 
@@ -294,6 +466,22 @@ function DiceRollPopup({ characterName, onClose, onRollComplete }) {
                 </div>
               )}
 
+              {/* Usar Fortuna */}
+              {fortune > 0 && (
+                <div>
+                  <label className="flex items-center gap-1.5 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={useFortune}
+                      onChange={e => setUseFortune(e.target.checked)}
+                      className="w-4 h-4 accent-amber-500"
+                    />
+                    <img src="/fortunacutulo.png" className="w-5 h-5 object-contain" alt="" />
+                    <span className="text-sm font-semibold text-amber-600 dark:text-amber-400">-1</span>
+                  </label>
+                </div>
+              )}
+
               {/* Usar Foco */}
               {canRoll && (
                 <div>
@@ -370,6 +558,7 @@ export default function Chat({ senderName, onClose }) {
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState('')
   const [showDicePopup, setShowDicePopup] = useState(false)
+  const [senderFortune, setSenderFortune] = useState(0)
   const messagesEndRef = useRef(null)
   const inputRef = useRef(null)
   const { activeCharacterName } = useSelection()
@@ -383,6 +572,15 @@ export default function Chat({ senderName, onClose }) {
     const unsub = storage.onMessagesChanged(setMessages)
     return () => unsub()
   }, [])
+
+  // Listen to sender's fortune (players only)
+  useEffect(() => {
+    if (senderName === 'Mestre') return
+    const unsub = storage.onCharacterChanged(senderName, char => {
+      setSenderFortune(parseInt(char?.fortune) || 0)
+    })
+    return () => unsub()
+  }, [senderName])
 
   const sendMessage = async (e) => {
     e.preventDefault()
@@ -435,6 +633,48 @@ export default function Chat({ senderName, onClose }) {
     await storage.saveMessage(message)
     if (rollData.totalComplications > 0) {
       await storage.addComplications(rollData.totalComplications)
+    }
+  }
+
+  const handleReroll = async (msg) => {
+    const data = msg.systemRollData
+    await storage.spendFortune(senderName)
+
+    const dice = []
+    for (let i = 0; i < data.dice.length; i++) {
+      const value = Math.floor(Math.random() * 20) + 1
+      dice.push({ value, success: value === 1 || value <= data.target })
+    }
+
+    const hasFocus = !!data.focus
+    const criticals = dice.filter(d => d.value === 1).length
+    const normalSuccesses = dice.filter(d => d.success && d.value !== 1).length
+    const totalSuccesses = hasFocus
+      ? normalSuccesses * 2 + criticals * 3
+      : normalSuccesses + criticals * 2
+    const totalComplications = dice.filter(d => d.value === 20).length
+
+    const rollData = {
+      ...data,
+      dice,
+      totalSuccesses,
+      totalComplications,
+      fortuneReroll: true,
+      usedFortune: false,
+    }
+
+    const message = {
+      id: Date.now().toString(),
+      sender: senderName,
+      type: 'system_roll',
+      content: `${data.attribute.name} + ${data.skill.name} (alvo ${data.target})`,
+      rollData: null,
+      systemRollData: rollData,
+      timestamp: new Date().toISOString(),
+    }
+    await storage.saveMessage(message)
+    if (totalComplications > 0) {
+      await storage.addComplications(totalComplications)
     }
   }
 
@@ -520,8 +760,16 @@ export default function Chat({ senderName, onClose }) {
                 <RollMessage rollData={msg.rollData} />
               )}
 
+              {msg.type === 'challenge_dice' && msg.challengeData && (
+                <ChallengeDiceMessage data={msg.challengeData} />
+              )}
+
               {msg.type === 'system_roll' && msg.systemRollData && (
-                <SystemRollMessage data={msg.systemRollData} />
+                <SystemRollMessage
+                  data={msg.systemRollData}
+                  canReroll={msg.sender === senderName && senderFortune > 0 && senderName !== 'Mestre'}
+                  onReroll={() => handleReroll(msg)}
+                />
               )}
 
               {msg.type === 'error' && (

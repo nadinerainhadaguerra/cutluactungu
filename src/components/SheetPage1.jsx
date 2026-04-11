@@ -1,43 +1,75 @@
 import { useState, useRef, useEffect } from 'react'
 import { ATTRIBUTES, SKILLS_DATA } from '../utils/characterTemplate'
 import { useSelection } from '../contexts/SelectionContext'
-
-const NATIONALITIES = [
-  { name: 'Australiana', languages: ['Inglês', 'Australiano nativo'] },
-  { name: 'Canadense', languages: ['Inglês', 'Francês', 'Primeiro Canadense'] },
-  { name: 'Checoslováquia', languages: ['Checo', 'Eslovaco', 'Alemão', 'Húngaro', 'Iídiche'] },
-  { name: 'Francesa', languages: ['Francês'] },
-  { name: 'Indiana', languages: ['Inglês', 'Urdu', 'Hindu', 'Bengali'] },
-  { name: 'Norueguesa', languages: ['Norueguês'] },
-  { name: 'Polonesa', languages: ['Polonês'] },
-  { name: 'Britânica', languages: ['Inglês', 'Irlandês'] },
-  { name: 'Estadunidense', languages: ['Inglês', 'Línguas nativas Norte Americanas'] },
-  { name: 'URSS', languages: ['Russa'] },
-  { name: 'Belga', languages: ['Holandês', 'Francês', 'Alemão'] },
-  { name: 'Camaronesa', languages: ['Inglês', 'Francês'] },
-  { name: 'Ceilão', languages: ['Inglês', 'Sinhala', 'Tamil'] },
-  { name: 'Ciprus', languages: ['Grego', 'Turco'] },
-  { name: 'Dinamarquesa', languages: ['Dinamarquês'] },
-  { name: 'Gambia', languages: ['Inglês', 'Línguas Tribais diversas'] },
-  { name: 'Ghanesa', languages: ['Inglês', 'Uma das 80 línguas tribais'] },
-  { name: 'Grega', languages: ['Grego'] },
-  { name: 'Queniana', languages: ['Inglês', 'Suaíli'] },
-  { name: 'Luxemburguesa', languages: ['Luxemburguês', 'Francês', 'Alemão'] },
-  { name: 'Malta', languages: ['Maltês', 'Inglês'] },
-  { name: 'Neozelandesa', languages: ['Inglês', 'Maori'] },
-  { name: 'Nigeriana', languages: ['Inglês', 'Hausa', 'Igbo', 'Yoruba'] },
-  { name: 'Rhodesia', languages: ['Inglês', 'Shona', 'Nbele'] },
-  { name: 'Sul africana', languages: ['Inglês', 'Holandês', 'Africâner', 'Línguas Africanas Nativas'] },
-  { name: 'Espanhola', languages: ['Espanhol', 'Catalão', 'Basco'] },
-  { name: 'Caribenha', languages: ['Inglês', 'Francês', 'Espanhol', 'Holandês', 'Creole'] },
-  { name: 'Holandesa', languages: ['Holandês', 'Inglês', 'Alemão', 'Francês'] },
-  { name: 'Yugolavávia', languages: ['Serbo-croata'] },
-]
+import { ARQUETIPOS, ANTECEDENTES, CARACTERISTICAS } from '../utils/bookData'
+import { NATIONALITIES } from '../utils/nationalities'
 
 function SectionHeader({ children, className = '' }) {
   return (
     <div className={`inline-block ${className}`}>
       <div className="section-header">{children}</div>
+    </div>
+  )
+}
+
+/* ── BookDropdown: searchable dropdown from catalog arrays ── */
+function BookDropdown({ label, value, onChange, options, placeholder }) {
+  const [search, setSearch] = useState('')
+  const [open, setOpen] = useState(false)
+  const ref = useRef(null)
+
+  useEffect(() => {
+    const handleClick = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false)
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [])
+
+  const filtered = options.filter(o =>
+    o.nome.toLowerCase().includes(search.toLowerCase())
+  )
+
+  const selected = options.find(o => o.nome === value)
+
+  return (
+    <div className="relative" ref={ref}>
+      <SectionHeader>{label}</SectionHeader>
+      <input
+        type="text"
+        value={open ? search : (value || '')}
+        onChange={e => { setSearch(e.target.value); if (!open) setOpen(true) }}
+        onFocus={() => { setSearch(''); setOpen(true) }}
+        placeholder={placeholder || `Buscar ${label.toLowerCase()}...`}
+        className="sheet-input mt-2"
+      />
+      {open && (
+        <ul className="absolute z-30 left-0 right-0 mt-1 max-h-48 overflow-y-auto rounded-lg shadow-lg
+                       border-2 border-achtung-green/30 bg-white dark:bg-gray-800
+                       text-gray-900 dark:text-gray-100">
+          {filtered.length === 0 ? (
+            <li className="px-3 py-2 text-sm text-gray-400 dark:text-gray-500">Nenhum resultado</li>
+          ) : (
+            filtered.map(o => (
+              <li
+                key={o.id}
+                onClick={() => { onChange(o.nome); setOpen(false); setSearch('') }}
+                className={`px-3 py-2 text-sm cursor-pointer transition-colors
+                  hover:bg-achtung-green/20 hover:text-achtung-green-dark dark:hover:text-achtung-green-light
+                  ${value === o.nome
+                    ? 'bg-achtung-green/15 font-semibold text-achtung-green-dark dark:text-achtung-green-light'
+                    : 'text-gray-800 dark:text-gray-200'
+                  }`}
+              >
+                <div className="font-semibold">{o.nome}</div>
+                {o.descricao && (
+                  <div className="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">{o.descricao}</div>
+                )}
+              </li>
+            ))
+          )}
+        </ul>
+      )}
     </div>
   )
 }
@@ -58,7 +90,10 @@ function StressBox({ checked, onClick }) {
   )
 }
 
-export default function SheetPage1({ character, updateField, updateCharacter }) {
+export default function SheetPage1({ character, updateField, updateCharacter, wizardHighlight = [] }) {
+  const hl = (zone) => wizardHighlight.includes(zone)
+    ? 'ring-4 ring-yellow-400/80 rounded-xl animate-pulse'
+    : ''
   const {
     selectedAttribute, setSelectedAttribute,
     selectedSkill, setSelectedSkill,
@@ -214,7 +249,7 @@ export default function SheetPage1({ character, updateField, updateCharacter }) 
     <div className="space-y-6">
       {/* Row 1: Nome, Nacionalidade, Posto */}
       <div className="grid grid-cols-1 md:grid-cols-6 gap-3">
-        <div className="md:col-span-3">
+        <div className="md:col-span-3 transition-all">
           <SectionHeader>Nome</SectionHeader>
           <input
             type="text"
@@ -223,7 +258,7 @@ export default function SheetPage1({ character, updateField, updateCharacter }) 
             className="sheet-input mt-2 font-semibold text-lg bg-gray-100 dark:bg-gray-800 cursor-not-allowed"
           />
         </div>
-        <div className="md:col-span-2 relative" ref={natRef}>
+        <div className={`md:col-span-2 relative transition-all ${hl('nationality')}`} ref={natRef}>
           <SectionHeader>Nacionalidade</SectionHeader>
           <input
             type="text"
@@ -284,31 +319,31 @@ export default function SheetPage1({ character, updateField, updateCharacter }) 
 
       {/* Row 2: Arquétipo, Antecedente, Característica */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <div>
-          <SectionHeader>Arquétipo</SectionHeader>
-          <input
-            type="text"
+        <div className={`transition-all ${hl('archetype')}`}>
+          <BookDropdown
+            label="Arquétipo"
             value={character.archetype || ''}
-            onChange={e => updateField('archetype', e.target.value)}
-            className="sheet-input mt-2"
+            onChange={v => updateField('archetype', v)}
+            options={ARQUETIPOS}
+            placeholder="Buscar arquétipo..."
           />
         </div>
-        <div>
-          <SectionHeader>Antecedente</SectionHeader>
-          <input
-            type="text"
+        <div className={`transition-all ${hl('background')}`}>
+          <BookDropdown
+            label="Antecedente"
             value={character.background || ''}
-            onChange={e => updateField('background', e.target.value)}
-            className="sheet-input mt-2"
+            onChange={v => updateField('background', v)}
+            options={ANTECEDENTES}
+            placeholder="Buscar antecedente..."
           />
         </div>
-        <div>
-          <SectionHeader>Característica</SectionHeader>
-          <input
-            type="text"
+        <div className={`transition-all ${hl('characteristic')}`}>
+          <BookDropdown
+            label="Característica"
             value={character.characteristic || ''}
-            onChange={e => updateField('characteristic', e.target.value)}
-            className="sheet-input mt-2"
+            onChange={v => updateField('characteristic', v)}
+            options={CARACTERISTICAS}
+            placeholder="Buscar característica..."
           />
         </div>
       </div>
@@ -360,7 +395,7 @@ export default function SheetPage1({ character, updateField, updateCharacter }) 
           </div>
 
           {/* Línguas */}
-          <div className="mt-4">
+          <div className={`mt-4 transition-all ${hl('languages')}`}>
             <SectionHeader>Línguas</SectionHeader>
             <div className="mt-2 min-h-[60px] p-2 rounded-lg border-2 border-achtung-green-muted/30
                             dark:border-achtung-green/20 bg-white dark:bg-gray-800">
@@ -452,13 +487,36 @@ export default function SheetPage1({ character, updateField, updateCharacter }) 
             />
           </div>
           <div>
-            <SectionHeader>Fortuna</SectionHeader>
-            <input
-              type="text"
-              value={character.fortune || ''}
-              onChange={e => updateField('fortune', e.target.value)}
-              className="sheet-input mt-2 text-center text-xl font-bold"
-            />
+            <div className="flex items-center justify-between">
+              <SectionHeader>Fortuna</SectionHeader>
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => updateField('fortune', String(Math.max(0, (parseInt(character.fortune) || 0) - 1)))}
+                  className="w-6 h-6 flex items-center justify-center rounded bg-gray-100 dark:bg-gray-800
+                             hover:bg-achtung-green/20 text-gray-600 dark:text-gray-400 font-bold text-sm transition-colors"
+                >−</button>
+                <button
+                  type="button"
+                  onClick={() => updateField('fortune', String(Math.max(0, (parseInt(character.fortune) || 0) + 1)))}
+                  className="w-6 h-6 flex items-center justify-center rounded bg-gray-100 dark:bg-gray-800
+                             hover:bg-achtung-green/20 text-gray-600 dark:text-gray-400 font-bold text-sm transition-colors"
+                >+</button>
+              </div>
+            </div>
+            <div className="mt-2 flex items-center justify-center gap-0.5
+                            border-b-2 border-achtung-green-muted dark:border-achtung-green
+                            focus-within:border-achtung-green-dark dark:focus-within:border-achtung-green-light
+                            transition-colors py-0.5">
+              <input
+                type="number"
+                min="0"
+                value={Math.max(0, parseInt(character.fortune) || 0)}
+                onChange={e => updateField('fortune', String(Math.max(0, parseInt(e.target.value) || 0)))}
+                className="bg-transparent outline-none text-center text-xl font-bold w-8 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+              />
+              <img src="/fortunacutulo.png" className="w-5 h-5 object-contain" alt="fortuna" />
+            </div>
           </div>
         </div>
 
@@ -482,7 +540,7 @@ export default function SheetPage1({ character, updateField, updateCharacter }) 
       </div>
 
       {/* Atributos */}
-      <div>
+      <div className={`transition-all ${hl('attributes')}`}>
         <SectionHeader>Atributos</SectionHeader>
         <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 mb-2">
           Clique no nome do atributo para selecioná-lo para rolagem.
@@ -554,7 +612,7 @@ export default function SheetPage1({ character, updateField, updateCharacter }) 
       </div>
 
       {/* Perícias */}
-      <div>
+      <div className={`transition-all ${hl('skills') || hl('focuses')}`}>
         <SectionHeader>Perícias</SectionHeader>
         <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 mb-2">
           Clique no nome da perícia para selecioná-la para rolagem.

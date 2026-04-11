@@ -3,13 +3,14 @@ import { createPortal } from 'react-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { useTheme } from '../contexts/ThemeContext'
 import { storage } from '../services/storage'
+import { EncyclopediaButton } from './EncyclopediaPopup'
 
 function ThemeToggleSmall() {
   const { isDark, toggleTheme } = useTheme()
   return (
     <button
       onClick={toggleTheme}
-      className="absolute top-4 right-4 p-2 rounded-lg bg-white/20 dark:bg-gray-800/50
+      className="p-2 rounded-lg bg-white/20 dark:bg-gray-800/50
                  hover:bg-white/40 dark:hover:bg-gray-700/50 transition-colors"
       title={isDark ? 'Tema Claro' : 'Tema Escuro'}
     >
@@ -177,7 +178,10 @@ export default function LoginScreen() {
 
   return (
     <div className="min-h-screen parchment-bg flex items-center justify-center p-4 relative">
-      <ThemeToggleSmall />
+      <div className="absolute top-4 right-4 flex items-center gap-2">
+        <EncyclopediaButton className="p-2 rounded-lg bg-white/20 dark:bg-gray-800/50 hover:bg-white/40 dark:hover:bg-gray-700/50 transition-colors" />
+        <ThemeToggleSmall />
+      </div>
 
       <div className="w-full max-w-md space-y-4">
         {/* Title */}

@@ -2,6 +2,35 @@ function rollSingleDie(sides) {
   return Math.floor(Math.random() * sides) + 1
 }
 
+// Dado de Desafio (Challenge Die): d6 com faces especiais
+// 1 → 1 dano | 2 → 2 dano | 3 → 3 dano | 4 → ⚔ (efeito) | 5 → ⚔ (efeito) | 6 → ⚔ + 1 dano
+export function rollChallengeDice(n) {
+  const dice = []
+  let totalDamage = 0
+  let totalEffects = 0
+
+  for (let i = 0; i < n; i++) {
+    const face = rollSingleDie(6)
+    let damage = 0
+    let effect = false
+
+    if (face <= 3) {
+      damage = face
+    } else if (face === 4 || face === 5) {
+      effect = true
+    } else { // face === 6
+      effect = true
+      damage = 1
+    }
+
+    totalDamage += damage
+    if (effect) totalEffects++
+    dice.push({ face, damage, effect })
+  }
+
+  return { dice, totalDamage, totalEffects, count: n }
+}
+
 export function parseDiceExpression(input) {
   const expression = input.replace(/\s+/g, '')
 

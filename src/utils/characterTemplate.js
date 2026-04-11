@@ -99,11 +99,17 @@ export function createCharacterTemplate(name, password) {
     attributes,
     skills,
     belongings: Array(12).fill(''),
+    contacts: [],
     weapons: [],
     biography: '',
     talents: [],
     spells: [],
     power: '',
+    masterPermissions: {
+      extraTalentKeywords: [],
+      spellTraditions: [],
+    },
+    setupComplete: false,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   }
