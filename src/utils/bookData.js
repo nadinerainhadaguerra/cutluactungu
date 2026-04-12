@@ -2481,32 +2481,40 @@ export const ARMAS = [
 ]
 
 // ============================================================
-// DESCRIÇÕES DE QUALIDADES DE ARMAS
+// DESCRIÇÕES DE EFEITOS DE ARMAS
+// Ativados quando ⚔ aparece nos dados de dano.
 // ============================================================
-export const QUALIDADES_DESC = {
-  'Feroz': '+1 de dano adicional por cada ⚔ obtido no ataque.',
-  'Perfurante': 'Ignora X pontos de Resistência por cada ⚔ obtido. (X = valor da qualidade)',
-  'Atordoante': 'Se o número de ⚔ for igual ou maior que a Resiliência do alvo, o alvo perde sua próxima ação.',
-  'Persistente': 'Causa X de dano por turno durante N turnos adicionais, onde N = número de ⚔ obtidos. (X = valor da qualidade)',
-  'Área': 'Pode atingir 1 alvo adicional por ⚔ obtido, desde que esteja no mesmo alcance.',
-  'Violento': 'Se pelo menos 1 ⚔ for obtido e o ataque causar 1 ou mais Ferimentos, causa 1 Ferimento extra.',
-  'Contenção': 'O alvo fica Agarrado (imobilizado). Pode escapar com um teste de Atletismo ou Combater.',
-  'Ocultável': 'Pode ser ocultada em uma inspeção casual.',
-  'Sutil': 'Não faz barulho ao ser usada; disparos são silenciosos.',
-  'Aparagem': 'Pode ser usada para aparar ataques corporais (reação).',
-  'Confiável': 'Nunca trava nem falha por mau funcionamento.',
-  'Imprecisa': 'Sofre penalidade ao ser usada além do alcance Curto.',
-  'Preciso': 'Concede +1d20 em ataques dentro do alcance ideal.',
-  'Combate Próximo': 'Não sofre penalidade ao ser usada em situações de combate corpo a corpo.',
-  'Munição': 'Tem quantidade limitada de usos; precisa ser reabastecida.',
-  'Inconstante': 'Pode travar ou falhar ao rolar resultado 20 em qualquer dado de ataque.',
-  'Drenagem': 'O uso causa dano ao próprio usuário.',
+export const EFEITOS_DESC = {
+  'Feroz':       '+1 de dano adicional por cada ⚔ obtido no ataque.',
+  'Perfurante':  'Ignora X pontos de Resistência por cada ⚔ obtido. (X = valor do efeito)',
+  'Atordoante':  'Se o número de ⚔ for igual ou maior que a Resiliência do alvo, o alvo perde sua próxima ação.',
+  'Persistente': 'Causa X de dano por turno durante N turnos adicionais, onde N = número de ⚔ obtidos. (X = valor do efeito)',
+  'Área':        'Pode atingir 1 alvo adicional por ⚔ obtido, desde que esteja no mesmo alcance.',
+  'Violento':    'Se pelo menos 1 ⚔ for obtido e o ataque causar 1 ou mais Ferimentos, causa 1 Ferimento extra.',
+  'Contenção':   'O alvo fica Agarrado (imobilizado). Pode escapar com um teste de Atletismo ou Combater.',
   'Agravamento': 'Os Ferimentos causados são mais difíceis de tratar.',
   'Debilitante': 'O alvo sofre uma condição debilitante além do dano normal.',
-  'Desajeitada': 'Requer espaço e esforço extra para manejar; penalidade em espaços confinados.',
-  'Mata-Gigante': 'Causa dano adicional contra alvos com alta Resistência ou blindagem.',
-  'Pesada': 'Requer suporte ou dois portadores para ser usada adequadamente.',
-  'Indireta': 'Pode atingir alvos em cobertura total ou atrás de obstáculos.',
+  'Mata-Gigante':'Causa dano adicional contra alvos com alta Resistência ou blindagem.',
+}
+
+// ============================================================
+// DESCRIÇÕES DE QUALIDADES DE ARMAS
+// Propriedades passivas da arma; não dependem de ⚔.
+// ============================================================
+export const QUALIDADES_DESC = {
+  'Ocultável':      'Pode ser ocultada em uma inspeção casual.',
+  'Sutil':          'Não faz barulho ao ser usada; disparos são silenciosos.',
+  'Aparagem':       'Pode ser usada para aparar ataques corporais (reação).',
+  'Confiável':      'Nunca trava nem falha por mau funcionamento.',
+  'Imprecisa':      'Sofre penalidade ao ser usada além do alcance Curto.',
+  'Preciso':        'Concede +1d20 em ataques dentro do alcance ideal.',
+  'Combate Próximo':'Não sofre penalidade ao ser usada em situações de combate corpo a corpo.',
+  'Munição':        'Tem quantidade limitada de usos; precisa ser reabastecida.',
+  'Inconstante':    'Pode travar ou falhar ao rolar resultado 20 em qualquer dado de ataque.',
+  'Drenagem':       'O uso causa dano ao próprio usuário.',
+  'Desajeitada':    'Requer espaço e esforço extra para manejar; penalidade em espaços confinados.',
+  'Pesada':         'Requer suporte ou dois portadores para ser usada adequadamente.',
+  'Indireta':       'Pode atingir alvos em cobertura total ou atrás de obstáculos.',
 }
 
 // ============================================================

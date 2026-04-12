@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { createPortal } from 'react-dom'
 import {
   ARQUETIPOS, ANTECEDENTES, CARACTERISTICAS,
-  TALENTOS, MAGIAS, ARMAS, QUALIDADES_DESC, ITEMS_CATALOG,
+  TALENTOS, MAGIAS, ARMAS, EFEITOS_DESC, QUALIDADES_DESC, ITEMS_CATALOG,
 } from '../utils/bookData'
 
 // ── Display name maps ─────────────────────────────────────────────────────────
@@ -31,7 +31,7 @@ const SECTIONS = [
   { id: 'talentos',       label: 'Talentos' },
   { id: 'magias',         label: 'Magias' },
   { id: 'armas',          label: 'Armas' },
-  { id: 'qualidades',     label: 'Qualidades' },
+  { id: 'qualidades',     label: 'Efeitos & Qualidades' },
   { id: 'catalogo',       label: 'Catálogo de Itens' },
 ]
 
@@ -414,20 +414,48 @@ function SectionArmas() {
   )
 }
 
-// ── Section: Qualidades ───────────────────────────────────────────────────────
+// ── Section: Efeitos & Qualidades ────────────────────────────────────────────
 function SectionQualidades() {
   return (
-    <div>
-      <SectionTitle>Qualidades de Arma</SectionTitle>
-      <div className="space-y-2">
-        {Object.entries(QUALIDADES_DESC).map(([nome, desc]) => (
-          <Card key={nome} className="!p-3">
-            <div className="flex gap-3">
-              <span className="font-semibold text-sm text-achtung-green-dark dark:text-achtung-green-light shrink-0 w-32">{nome}</span>
-              <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">{desc}</p>
-            </div>
-          </Card>
-        ))}
+    <div className="space-y-6">
+      <SectionTitle>Efeitos &amp; Qualidades de Arma</SectionTitle>
+
+      {/* Efeitos de Arma */}
+      <div>
+        <div className="flex items-center gap-2 mb-3">
+          <span className="text-base font-gothic text-yellow-600 dark:text-yellow-400">Efeitos ⚔</span>
+          <span className="flex-1 h-px bg-yellow-400/30" />
+          <span className="text-xs text-gray-400 dark:text-gray-500 italic">Ativados ao obter ⚔ nos dados de dano</span>
+        </div>
+        <div className="space-y-2">
+          {Object.entries(EFEITOS_DESC).map(([nome, desc]) => (
+            <Card key={nome} className="!p-3 border-yellow-200 dark:border-yellow-900/40">
+              <div className="flex gap-3">
+                <span className="font-semibold text-sm text-yellow-700 dark:text-yellow-400 shrink-0 w-32">{nome}</span>
+                <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">{desc}</p>
+              </div>
+            </Card>
+          ))}
+        </div>
+      </div>
+
+      {/* Qualidades de Arma */}
+      <div>
+        <div className="flex items-center gap-2 mb-3">
+          <span className="text-base font-gothic text-achtung-green-dark dark:text-achtung-green-light">Qualidades</span>
+          <span className="flex-1 h-px bg-achtung-green/30" />
+          <span className="text-xs text-gray-400 dark:text-gray-500 italic">Propriedades passivas da arma</span>
+        </div>
+        <div className="space-y-2">
+          {Object.entries(QUALIDADES_DESC).map(([nome, desc]) => (
+            <Card key={nome} className="!p-3">
+              <div className="flex gap-3">
+                <span className="font-semibold text-sm text-achtung-green-dark dark:text-achtung-green-light shrink-0 w-32">{nome}</span>
+                <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">{desc}</p>
+              </div>
+            </Card>
+          ))}
+        </div>
       </div>
     </div>
   )
