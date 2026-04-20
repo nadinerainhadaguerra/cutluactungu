@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { ATTRIBUTES, SKILLS_DATA } from '../utils/characterTemplate'
 import { useSelection } from '../contexts/SelectionContext'
+import { useMasterSettings } from '../contexts/MasterSettingsContext'
 import { ARQUETIPOS, ANTECEDENTES, CARACTERISTICAS } from '../utils/bookData'
 import { NATIONALITIES } from '../utils/nationalities'
 
@@ -29,8 +30,6 @@ function BookDropdown({ label, value, onChange, options, placeholder }) {
   const filtered = options.filter(o =>
     o.nome.toLowerCase().includes(search.toLowerCase())
   )
-
-  const selected = options.find(o => o.nome === value)
 
   return (
     <div className="relative" ref={ref}>
@@ -90,6 +89,24 @@ function StressBox({ checked, onClick }) {
   )
 }
 
+function gradToExtraDano(grad) {
+  const g = parseInt(grad) || 0
+  if (g >= 11) return 3
+  if (g >= 9) return 2
+  if (g >= 7) return 1
+  return 0
+}
+
+function gradToResistance(grad) {
+  const g = parseInt(grad) || 0
+  if (g >= 16) return 5
+  if (g >= 14) return 4
+  if (g >= 12) return 3
+  if (g >= 10) return 2
+  if (g >= 9) return 1
+  return 0
+}
+
 export default function SheetPage1({ character, updateField, updateCharacter, wizardHighlight = [] }) {
   const hl = (zone) => wizardHighlight.includes(zone)
     ? 'ring-4 ring-yellow-400/80 rounded-xl animate-pulse'
@@ -98,6 +115,7 @@ export default function SheetPage1({ character, updateField, updateCharacter, wi
     selectedAttribute, setSelectedAttribute,
     selectedSkill, setSelectedSkill,
   } = useSelection()
+  const { settings } = useMasterSettings()
 
   const toggleStress = (index) => {
     updateCharacter(prev => {
@@ -476,6 +494,16 @@ export default function SheetPage1({ character, updateField, updateCharacter, wi
               onChange={e => updateField('courage', e.target.value)}
               className="sheet-input mt-2 text-center text-xl font-bold"
             />
+            {settings.resistenciaPorAtributo && (
+              <div className="mt-1.5 rounded-lg border border-blue-400/30 bg-blue-500/5 dark:bg-blue-500/10 px-2 py-1.5 text-center">
+                <div className="text-[9px] font-semibold uppercase text-blue-500 dark:text-blue-400 tracking-wide">
+                  Base Vontade
+                </div>
+                <div className="text-lg font-bold text-blue-600 dark:text-blue-300">
+                  {gradToResistance(character.attributes?.will?.graduation)}
+                </div>
+              </div>
+            )}
           </div>
           <div>
             <SectionHeader>Armadura</SectionHeader>
@@ -485,7 +513,18 @@ export default function SheetPage1({ character, updateField, updateCharacter, wi
               onChange={e => updateField('armor', e.target.value)}
               className="sheet-input mt-2 text-center text-xl font-bold"
             />
+            {settings.resistenciaPorAtributo && (
+              <div className="mt-1.5 rounded-lg border border-blue-400/30 bg-blue-500/5 dark:bg-blue-500/10 px-2 py-1.5 text-center">
+                <div className="text-[9px] font-semibold uppercase text-blue-500 dark:text-blue-400 tracking-wide">
+                  Base Força
+                </div>
+                <div className="text-lg font-bold text-blue-600 dark:text-blue-300">
+                  {gradToResistance(character.attributes?.strength?.graduation)}
+                </div>
+              </div>
+            )}
           </div>
+
           <div>
             <div className="flex items-center justify-between">
               <SectionHeader>Fortuna</SectionHeader>
@@ -591,17 +630,25 @@ export default function SheetPage1({ character, updateField, updateCharacter, wi
               <tr>
                 <td className="sheet-cell font-bold text-xs uppercase bg-achtung-green/5 dark:bg-achtung-green/5">
                   Dano Adicional
+                  {settings.dadoDeDanoPorAtributo && (
+                    <div className="text-[9px] text-blue-500 dark:text-blue-400 font-normal normal-case mt-0.5">auto p.80</div>
+                  )}
                 </td>
                 {ATTRIBUTES.map(attr => {
                   const isSelected = selectedAttribute?.id === attr.id
+                  const calculado = gradToExtraDano(character.attributes[attr.id]?.graduation)
                   return (
-                    <td key={attr.id} className={`sheet-cell ${isSelected ? 'bg-yellow-50 dark:bg-yellow-900/20' : ''}`}>
-                      <input
-                        type="text"
-                        value={character.attributes[attr.id]?.additionalDamage || ''}
-                        onChange={e => updateAttribute(attr.id, 'additionalDamage', e.target.value)}
-                        className="w-full bg-transparent text-center outline-none"
-                      />
+                    <td key={attr.id} className={`sheet-cell text-center ${isSelected ? 'bg-yellow-50 dark:bg-yellow-900/20' : ''}`}>
+                      {settings.dadoDeDanoPorAtributo ? (
+                        <span className={`text-sm font-bold
+                          ${calculado > 0
+                            ? 'text-blue-500 dark:text-blue-400'
+                            : 'text-gray-300 dark:text-gray-600'}`}>
+                          {calculado > 0 ? `+${calculado}◆` : '—'}
+                        </span>
+                      ) : (
+                        <span className="text-gray-300 dark:text-gray-600 text-sm">—</span>
+                      )}
                     </td>
                   )
                 })}

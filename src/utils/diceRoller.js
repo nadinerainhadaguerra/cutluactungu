@@ -3,7 +3,7 @@ function rollSingleDie(sides) {
 }
 
 // Dado de Desafio (Challenge Die): d6 com faces especiais
-// 1 → 1 dano | 2 → 2 dano | 3 → 3 dano | 4 → ⚔ (efeito) | 5 → ⚔ (efeito) | 6 → ⚔ + 1 dano
+// 1 → 1 dano | 2 → 2 dano | 3 → 0 | 4 → 0 | 5 → ⚔ + 1 dano | 6 → ⚔ + 1 dano
 export function rollChallengeDice(n) {
   const dice = []
   let totalDamage = 0
@@ -14,11 +14,13 @@ export function rollChallengeDice(n) {
     let damage = 0
     let effect = false
 
-    if (face <= 3) {
-      damage = face
-    } else if (face === 4 || face === 5) {
-      effect = true
-    } else { // face === 6
+    if (face === 1) {
+      damage = 1
+    } else if (face === 2) {
+      damage = 2
+    } else if (face === 3 || face === 4) {
+      // 0 dano, sem efeito
+    } else { // face === 5 ou 6
       effect = true
       damage = 1
     }

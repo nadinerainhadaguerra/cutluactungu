@@ -141,6 +141,22 @@ export const storage = {
     })
   },
 
+  // --- Master Settings ---
+  async saveMasterSettings(settings) {
+    await setDoc(CONFIG_DOC, { masterSettings: settings }, { merge: true })
+  },
+
+  onMasterSettingsChanged(callback) {
+    const DEFAULT = { poderDaMagia: false, resistenciaPorAtributo: false, dadoDeDanoPorAtributo: false }
+    return onSnapshot(CONFIG_DOC, snap => {
+      if (snap.exists() && snap.data().masterSettings) {
+        callback({ ...DEFAULT, ...snap.data().masterSettings })
+      } else {
+        callback({ ...DEFAULT })
+      }
+    })
+  },
+
   onCharactersChanged(callback) {
     return onSnapshot(collection(db, CHARACTERS_COL), snap => {
       callback(snap.docs.map(d => d.data()))
@@ -180,6 +196,10 @@ export const storage = {
     return onSnapshot(doc(db, NPCS_COL, name), snap => {
       callback(snap.exists() ? snap.data() : null)
     })
+  },
+
+  async updateNpcEmCena(name, value) {
+    await setDoc(doc(db, NPCS_COL, name), { emCena: value }, { merge: true })
   },
 
   // --- Notes ---

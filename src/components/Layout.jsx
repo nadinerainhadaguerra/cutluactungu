@@ -179,6 +179,7 @@ export default function Layout() {
           <Chat
             senderName={user.type === 'master' ? 'Mestre' : user.name}
             onClose={() => setChatOpen(false)}
+            isVisible={chatOpen}
           />
         </div>
 

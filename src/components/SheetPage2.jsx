@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { storage } from '../services/storage'
 import { parseDiceExpression, rollChallengeDice } from '../utils/diceRoller'
 import { useSelection } from '../contexts/SelectionContext'
+import { useMasterSettings } from '../contexts/MasterSettingsContext'
 import { TALENTOS, ARMAS, ARQUETIPOS, ANTECEDENTES, CARACTERISTICAS } from '../utils/bookData'
 
 function SectionHeader({ children }) {
@@ -436,11 +437,18 @@ function TalentCard({ talent, expanded, onToggle, onSendChat, onEdit, onDelete }
   return (
     <div className="rounded-xl border border-achtung-green/20 bg-gray-50 dark:bg-gray-800/60
                     hover:border-achtung-green/40 transition-colors overflow-hidden">
-      <div className="flex items-center gap-2 px-3 py-2 cursor-pointer" onClick={onToggle}>
-        <span className="text-sm font-semibold text-achtung-green-dark dark:text-achtung-green-light truncate">
+      {/* Linha 1: nome + seta */}
+      <div className="flex items-center gap-2 px-3 pt-2 pb-1 cursor-pointer" onClick={onToggle}>
+        <span className="text-sm font-semibold text-achtung-green-dark dark:text-achtung-green-light flex-1 min-w-0">
           {talent.name}
         </span>
-        <div className="flex items-center gap-1 shrink-0">
+        <svg className={`w-4 h-4 text-gray-400 transition-transform shrink-0 ${expanded ? 'rotate-180' : ''}`}
+          fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </div>
+      {/* Linha 2: botões */}
+      <div className="flex items-center gap-1 px-3 pb-2">
           {/* Send to chat */}
           <button type="button" onClick={e => { e.stopPropagation(); onSendChat() }}
             className="w-6 h-6 flex items-center justify-center rounded
@@ -469,12 +477,6 @@ function TalentCard({ talent, expanded, onToggle, onSendChat, onEdit, onDelete }
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
-          {/* Expand arrow */}
-          <svg className={`w-4 h-4 text-gray-400 transition-transform ${expanded ? 'rotate-180' : ''}`}
-            fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-          </svg>
-        </div>
       </div>
       {expanded && (
         <div className="px-3 pb-3 pt-1 border-t border-achtung-green/10 space-y-1.5">
@@ -733,6 +735,7 @@ export default function SheetPage2({ character, updateCharacter, isMaster = fals
   const [showTalentCatalog, setShowTalentCatalog] = useState(false)
   const [showWeaponCatalog, setShowWeaponCatalog] = useState(false)
   const { activeCharacterName } = useSelection()
+  const { settings } = useMasterSettings()
 
   const updateBelonging = (index, value) => {
     updateCharacter(prev => {
@@ -791,19 +794,12 @@ export default function SheetPage2({ character, updateCharacter, isMaster = fals
   }
 
   const sendTalentToChat = async (talent) => {
-    const lines = [
-      `━━━ 🎭 TALENTO ━━━`,
-      `📌 ${talent.name}`,
-    ]
-    if (talent.keyword) lines.push(`🔑 Palavra-Chave: ${talent.keyword}`)
-    if (talent.effect) lines.push(`⚡ Efeito: ${talent.effect}`)
-    lines.push(`━━━━━━━━━━━━━━━`)
-
     const message = {
       id: Date.now().toString(),
       sender: activeCharacterName || 'Sistema',
-      type: 'message',
-      content: lines.join('\n'),
+      type: 'item_ref',
+      content: talent.name,
+      itemRef: { type: 'talent', name: talent.name, keyword: talent.keyword || '', effect: talent.effect || '' },
       rollData: null,
       systemRollData: null,
       timestamp: new Date().toISOString(),
@@ -839,7 +835,7 @@ export default function SheetPage2({ character, updateCharacter, isMaster = fals
   const rollWeaponStress = async (weapon) => {
     const stressStr = weapon.stress || ''
     // Estresse é um número puro de Dados de Desafio (d6 especiais)
-    const n = parseInt(stressStr, 10)
+    let n = parseInt(stressStr, 10)
     if (!n || n < 1) {
       const message = {
         id: Date.now().toString(),
@@ -854,12 +850,31 @@ export default function SheetPage2({ character, updateCharacter, isMaster = fals
       return
     }
 
+    // Dados extras por atributo (toggle Dado de Dano por Atributo, p.80)
+    // Calcula direto da graduação: 7-8→+1, 9-10→+2, 11+→+3
+    let extraDiceLabel = null
+    if (settings.dadoDeDanoPorAtributo) {
+      const range = (weapon.range || '').trim().toLowerCase()
+      const isMelee = !range || range === 'n/a' || range === 'corpo a corpo' || range === 'adjacente' || range === 'nenhum'
+      const attrId = isMelee ? 'strength' : 'coordination'
+      const attrLabel = isMelee ? 'Força' : 'Coordenação'
+      const grad = parseInt(character.attributes?.[attrId]?.graduation || '0', 10) || 0
+      let extra = 0
+      if (grad >= 11) extra = 3
+      else if (grad >= 9) extra = 2
+      else if (grad >= 7) extra = 1
+      if (extra > 0) {
+        n += extra
+        extraDiceLabel = `+${extra}◆ ${attrLabel}`
+      }
+    }
+
     const result = rollChallengeDice(n)
     const message = {
       id: Date.now().toString(),
       sender: activeCharacterName || 'Sistema',
       type: 'challenge_dice',
-      content: `⚔ ${weapon.name}`,
+      content: `⚔ ${weapon.name}${extraDiceLabel ? ` (${extraDiceLabel})` : ''}`,
       rollData: null,
       systemRollData: null,
       challengeData: {

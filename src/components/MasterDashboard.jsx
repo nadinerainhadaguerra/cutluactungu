@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { storage } from '../services/storage'
 import CharacterSheet from './CharacterSheet'
+import { useMasterSettings } from '../contexts/MasterSettingsContext'
 
 function CharacterCard({ char, onClick, onEdit, onDelete, onResetPassword }) {
   return (
@@ -333,6 +334,74 @@ function NpcEditPopup({ currentName, onSave, onClose }) {
   )
 }
 
+function MasterSettingsPopup({ onClose }) {
+  const { settings, updateSetting } = useMasterSettings()
+
+  const toggles = [
+    {
+      key: 'poderDaMagia',
+      label: 'Poder da Magia',
+      desc: 'Adiciona botão de rolar dano nas magias usando ◆ igual ao Poder do conjurador.',
+    },
+    {
+      key: 'resistenciaPorAtributo',
+      label: 'Resistência por Atributo',
+      desc: 'Exibe Resistência Física (Armadura + Cobertura) e Mental (Coragem + Moral) calculadas automaticamente na ficha.',
+    },
+    {
+      key: 'dadoDeDanoPorAtributo',
+      label: 'Dado de Dano por Atributo',
+      desc: 'Adiciona ◆ extras ao rolar dano de arma com base no atributo relevante (Força para corpo-a-corpo, Coordenação para à distância).',
+    },
+  ]
+
+  return (
+    <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" onClick={onClose}>
+      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-md border-2 border-achtung-green/30"
+           onClick={e => e.stopPropagation()}>
+        <div className="flex items-center justify-between px-5 py-4 border-b border-achtung-green/20
+                        bg-achtung-green-dark text-white rounded-t-2xl">
+          <div className="flex items-center gap-2">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            <span className="font-gothic text-xl">Configurações da Sessão</span>
+          </div>
+          <button onClick={onClose} className="p-1 hover:bg-white/20 rounded transition-colors">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        <div className="p-5 space-y-4">
+          <p className="text-xs text-gray-500 dark:text-gray-400">
+            Regras opcionais que se aplicam a todos os jogadores da sessão.
+          </p>
+          {toggles.map(t => (
+            <div key={t.key} className="flex items-start gap-3">
+              <button
+                type="button"
+                onClick={() => updateSetting(t.key, !settings[t.key])}
+                className={`relative shrink-0 mt-0.5 w-10 h-6 rounded-full overflow-hidden transition-colors duration-200
+                  ${settings[t.key] ? 'bg-achtung-green' : 'bg-gray-300 dark:bg-gray-600'}`}
+              >
+                <span className={`absolute top-1 left-0 w-4 h-4 rounded-full bg-white shadow transition-transform duration-200
+                  ${settings[t.key] ? 'translate-x-5' : 'translate-x-1'}`} />
+              </button>
+              <div>
+                <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">{t.label}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">{t.desc}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function CounterBar() {
   const [momentum, setMomentum] = useState(0)
   const [complications, setComplications] = useState(0)
@@ -422,6 +491,7 @@ export default function MasterDashboard() {
   const [editingNpc, setEditingNpc] = useState(null)
   const [deletingChar, setDeletingChar] = useState(null)
   const [deletingNpc, setDeletingNpc] = useState(null)
+  const [showSettings, setShowSettings] = useState(false)
 
   useEffect(() => {
     const unsubChars = storage.onCharactersChanged(setCharacters)
@@ -499,15 +569,30 @@ export default function MasterDashboard() {
 
   return (
     <div className="max-w-4xl mx-auto p-4 sm:p-6">
-      <div className="mb-6">
-        <h2 className="font-gothic text-3xl text-achtung-green-dark dark:text-achtung-green-light mb-2">
-          Painel do Mestre
-        </h2>
-        <p className="text-sm text-gray-600 dark:text-gray-400">
-          {characters.length} ficha{characters.length !== 1 ? 's' : ''} de jogador{characters.length !== 1 ? 'es' : ''}
-          {' · '}
-          {npcs.length} NPC{npcs.length !== 1 ? 's' : ''}
-        </p>
+      <div className="mb-6 flex items-start justify-between gap-4">
+        <div>
+          <h2 className="font-gothic text-3xl text-achtung-green-dark dark:text-achtung-green-light mb-2">
+            Painel do Mestre
+          </h2>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            {characters.length} ficha{characters.length !== 1 ? 's' : ''} de jogador{characters.length !== 1 ? 'es' : ''}
+            {' · '}
+            {npcs.length} NPC{npcs.length !== 1 ? 's' : ''}
+          </p>
+        </div>
+        <button
+          onClick={() => setShowSettings(true)}
+          className="shrink-0 w-10 h-10 flex items-center justify-center rounded-xl
+                     bg-achtung-green/10 hover:bg-achtung-green/20 border border-achtung-green/20
+                     text-achtung-green-dark dark:text-achtung-green-light transition-colors"
+          title="Configurações da sessão"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+              d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+        </button>
       </div>
 
       <CounterBar />
@@ -620,6 +705,9 @@ export default function MasterDashboard() {
         />
       )}
 
+      {showSettings && (
+        <MasterSettingsPopup onClose={() => setShowSettings(false)} />
+      )}
 
     </div>
   )
