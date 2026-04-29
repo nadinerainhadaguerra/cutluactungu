@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react'
 import { storage } from '../services/storage'
 import CharacterSheet from './CharacterSheet'
 import { useMasterSettings } from '../contexts/MasterSettingsContext'
+import { useSubHeader } from '../contexts/SubHeaderContext'
 
-function CharacterCard({ char, onClick, onEdit, onDelete, onResetPassword }) {
+function CharacterCard({ char, onClick, onEdit, onDelete, onResetPassword, onEmCenaChange }) {
   return (
     <div className="card p-4 text-left hover:shadow-2xl hover:scale-[1.02]
                     transition-all duration-200 group relative cursor-pointer"
@@ -89,9 +90,30 @@ function CharacterCard({ char, onClick, onEdit, onDelete, onResetPassword }) {
         )}
       </div>
 
-      <p className="text-xs text-gray-400 dark:text-gray-600 mt-2">
-        Atualizado: {char.updatedAt ? new Date(char.updatedAt).toLocaleDateString('pt-BR') : '-'}
-      </p>
+      <div className="mt-2 flex items-center justify-between">
+        <p className="text-xs text-gray-400 dark:text-gray-600">
+          Atualizado: {char.updatedAt ? new Date(char.updatedAt).toLocaleDateString('pt-BR') : '-'}
+        </p>
+        {onEmCenaChange && (
+          <label
+            className="flex items-center gap-1.5 cursor-pointer select-none
+                       px-2 py-0.5 rounded-lg border border-orange-400/40
+                       bg-orange-50 dark:bg-orange-900/20
+                       hover:bg-orange-100 dark:hover:bg-orange-900/30 transition-colors"
+            onClick={e => e.stopPropagation()}
+          >
+            <input
+              type="checkbox"
+              checked={!!char.emCena}
+              onChange={e => onEmCenaChange(e.target.checked)}
+              className="w-3.5 h-3.5 accent-orange-500"
+            />
+            <span className="text-xs font-semibold text-orange-700 dark:text-orange-300 whitespace-nowrap">
+              Em cena
+            </span>
+          </label>
+        )}
+      </div>
     </div>
   )
 }
@@ -492,12 +514,24 @@ export default function MasterDashboard() {
   const [deletingChar, setDeletingChar] = useState(null)
   const [deletingNpc, setDeletingNpc] = useState(null)
   const [showSettings, setShowSettings] = useState(false)
+  const { setSubHeader } = useSubHeader()
 
   useEffect(() => {
     const unsubChars = storage.onCharactersChanged(setCharacters)
     const unsubNpcs = storage.onNpcsChanged(setNpcs)
     return () => { unsubChars(); unsubNpcs() }
   }, [])
+
+  useEffect(() => {
+    if (selectedCharacter) {
+      setSubHeader({ label: 'Voltar para lista', onBack: () => setSelectedCharacter(null) })
+    } else if (selectedNpc) {
+      setSubHeader({ label: 'Voltar para lista', onBack: () => setSelectedNpc(null) })
+    } else {
+      setSubHeader(null)
+    }
+    return () => setSubHeader(null)
+  }, [selectedCharacter, selectedNpc, setSubHeader])
 
   const createNpc = async (name) => {
     await storage.createNpc(name)
@@ -525,46 +559,12 @@ export default function MasterDashboard() {
 
   // Viewing a player character sheet
   if (selectedCharacter) {
-    return (
-      <div>
-        <div className="sticky top-[57px] z-10 bg-achtung-parchment-dark/90 dark:bg-gray-900/90
-                        backdrop-blur-sm border-b border-achtung-green/20 px-4 py-2">
-          <button
-            onClick={() => setSelectedCharacter(null)}
-            className="flex items-center gap-2 text-sm text-achtung-green-dark dark:text-achtung-green-light
-                       hover:underline"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-            Voltar para lista
-          </button>
-        </div>
-        <CharacterSheet characterName={selectedCharacter} isMaster />
-      </div>
-    )
+    return <CharacterSheet characterName={selectedCharacter} isMaster />
   }
 
   // Viewing an NPC sheet
   if (selectedNpc) {
-    return (
-      <div>
-        <div className="sticky top-[57px] z-10 bg-achtung-parchment-dark/90 dark:bg-gray-900/90
-                        backdrop-blur-sm border-b border-achtung-green/20 px-4 py-2">
-          <button
-            onClick={() => setSelectedNpc(null)}
-            className="flex items-center gap-2 text-sm text-achtung-green-dark dark:text-achtung-green-light
-                       hover:underline"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-            Voltar para lista
-          </button>
-        </div>
-        <CharacterSheet characterName={selectedNpc} isMaster isNpc />
-      </div>
-    )
+    return <CharacterSheet characterName={selectedNpc} isMaster isNpc />
   }
 
   return (
@@ -664,6 +664,7 @@ export default function MasterDashboard() {
                 onClick={() => setSelectedNpc(npc.name)}
                 onEdit={() => setEditingNpc(npc.name)}
                 onDelete={() => setDeletingNpc(npc.name)}
+                onEmCenaChange={checked => storage.updateNpcEmCena(npc.name, checked)}
               />
             ))}
           </div>

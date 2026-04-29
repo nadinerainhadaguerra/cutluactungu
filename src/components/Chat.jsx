@@ -272,42 +272,55 @@ function SystemRollMessage({ data, canReroll, onReroll }) {
   )
 }
 
-// Portrait avatar — replicates the sheet crop exactly, scaled down to fit
+// Portrait avatar
+// Strategy: use background-image positioned so the oval center (cx=80,cy=112 in 160×200 sheet)
+// maps to avatar center (18,18). AV_K scales sheet→avatar so oval height = 30px (3px padding each side).
 const AVATAR_SIZE = 36
-const FRAME_W = 160, FRAME_H = 200
-const OVAL = { cx: 80, cy: 118, rx: 58, ry: 52 }
-const OVAL_CLIP = `ellipse(${OVAL.rx}px ${OVAL.ry}px at ${OVAL.cx}px ${OVAL.cy}px)`
-const K = AVATAR_SIZE / (OVAL.rx * 2) // scale factor ~0.31
+const OVAL_AV = { cx: 80, cy: 112, rx: 58, ry: 57 }
+const AV_K = 32 / (OVAL_AV.ry * 2) // 30/114 ≈ 0.2632
 
 function PortraitAvatar({ portrait, name }) {
   if (portrait?.url) {
+    const nw = portrait.naturalWidth
+    const nh = portrait.naturalHeight
+    const half = AVATAR_SIZE / 2 // 18
+
+    let bgStyle
+    if (nw && nh) {
+      const bs = Math.max((OVAL_AV.rx * 2) / nw, (OVAL_AV.ry * 2) / nh)
+      const W = nw * bs * (portrait.scale || 1)
+      const H = nh * bs * (portrait.scale || 1)
+      const W_bg = W * AV_K
+      const H_bg = H * AV_K
+      const ox = portrait.offsetX || 0
+      const oy = portrait.offsetY || 0
+      // Oval center maps to avatar y=24 (shifted down 6px from center).
+      // This puts the face top at y≈9 where the circle is ~31px wide, fully showing the forehead.
+      const targetY = half + -13
+      const bgX = (half-2) - (W / 2 - ox) * AV_K
+      const bgY = targetY - (H / 2 - oy) * AV_K
+      bgStyle = {
+        backgroundImage: `url("${portrait.url}")`,
+        backgroundSize: `${W_bg}px ${H_bg}px`,
+        backgroundPosition: `${bgX}px ${bgY}px`,
+        backgroundRepeat: 'no-repeat',
+      }
+    } else {
+      // Fallback when naturalWidth/naturalHeight not saved: show upper portion where faces usually are
+      bgStyle = {
+        backgroundImage: `url("${portrait.url}")`,
+        backgroundSize: '110% auto',
+        backgroundPosition: 'center 15%',
+      }
+    }
+
     return (
-      <div style={{ width: AVATAR_SIZE, height: AVATAR_SIZE, borderRadius: '50%', overflow: 'hidden', flexShrink: 0 }}
-           className="border border-achtung-green/30">
-        <div style={{ position: 'relative', width: AVATAR_SIZE, height: AVATAR_SIZE }}>
-          <div style={{
-            position: 'absolute',
-            width: FRAME_W, height: FRAME_H,
-            left: AVATAR_SIZE / 2 - OVAL.cx * K,
-            top: AVATAR_SIZE / 2 - OVAL.cy * K,
-            transform: `scale(${K})`,
-            transformOrigin: '0 0',
-            clipPath: OVAL_CLIP,
-          }}>
-            <img
-              src={portrait.url}
-              alt={name}
-              draggable={false}
-              style={{
-                position: 'absolute', inset: 0, width: '100%', height: '100%',
-                objectFit: 'cover',
-                transformOrigin: `${OVAL.cx}px ${OVAL.cy}px`,
-                transform: `translate(${portrait.offsetX || 0}px, ${portrait.offsetY || 0}px) scale(${portrait.scale || 1})`,
-              }}
-            />
-          </div>
-        </div>
-      </div>
+      <div style={{
+        width: AVATAR_SIZE, height: AVATAR_SIZE,
+        borderRadius: '50%', flexShrink: 0,
+        boxShadow: '0 0 0 1px rgba(74,124,63,0.3)',
+        ...bgStyle,
+      }} />
     )
   }
   return (
@@ -354,7 +367,7 @@ function ItemRefMessage({ data }) {
     setShowTooltip(v => !v)
   }
 
-  const icon = data.type === 'spell' ? '✨' : '🎭'
+  const icon = data.type === 'spell' ? '✨' : data.type === 'contact' ? '👤' : '🎭'
   const fields = data.type === 'spell'
     ? [
         data.skill      && { label: 'Perícia',      value: data.skill },
@@ -363,6 +376,11 @@ function ItemRefMessage({ data }) {
         data.duration   && { label: 'Duração',       value: data.duration },
         data.effect     && { label: 'Efeito',        value: data.effect },
         data.momentum   && { label: 'Ímpeto',        value: data.momentum },
+      ].filter(Boolean)
+    : data.type === 'contact'
+    ? [
+        data.keyword && { label: 'Tipo',      value: data.keyword },
+        data.effect  && { label: 'Descrição', value: data.effect },
       ].filter(Boolean)
     : [
         data.keyword && { label: 'Palavra-Chave', value: data.keyword },
@@ -794,6 +812,8 @@ export default function Chat({ senderName, onClose, isVisible = false }) {
             scale: char.portraitScale || 1,
             offsetX: char.portraitOffsetX || 0,
             offsetY: char.portraitOffsetY || 0,
+            naturalWidth: char.portraitNaturalWidth || 0,
+            naturalHeight: char.portraitNaturalHeight || 0,
           },
         }))
       }
@@ -1356,10 +1376,10 @@ export default function Chat({ senderName, onClose, isVisible = false }) {
         )}
 
         {/* The 3 action buttons */}
-        <div className="flex flex-col gap-1.5">
+        <div className="flex flex-col gap-3">
           {showWeaponsBtn && (
             <button type="button" onClick={() => handleFloatingBtn('weapons')}
-              className={`w-9 h-9 flex items-center justify-center rounded-xl shadow-lg text-sm
+              className={`w-[54px] h-[54px] flex items-center justify-center rounded-xl shadow-lg text-2xl
                          border-2 transition-all
                          ${floatingMenu === 'weapons' || floatingNpcSel === 'weapons'
                            ? 'bg-red-500 border-red-600 text-white scale-105'
@@ -1370,7 +1390,7 @@ export default function Chat({ senderName, onClose, isVisible = false }) {
           )}
           {showSpellsBtn && (
             <button type="button" onClick={() => handleFloatingBtn('spells')}
-              className={`w-9 h-9 flex items-center justify-center rounded-xl shadow-lg text-sm
+              className={`w-[54px] h-[54px] flex items-center justify-center rounded-xl shadow-lg text-2xl
                          border-2 transition-all
                          ${floatingMenu === 'spells' || floatingNpcSel === 'spells'
                            ? 'bg-purple-500 border-purple-600 text-white scale-105'
@@ -1381,7 +1401,7 @@ export default function Chat({ senderName, onClose, isVisible = false }) {
           )}
           {showTalentsBtn && (
             <button type="button" onClick={() => handleFloatingBtn('talents')}
-              className={`w-9 h-9 flex items-center justify-center rounded-xl shadow-lg text-sm
+              className={`w-[54px] h-[54px] flex items-center justify-center rounded-xl shadow-lg text-2xl
                          border-2 transition-all
                          ${floatingMenu === 'talents' || floatingNpcSel === 'talents'
                            ? 'bg-achtung-green border-achtung-green-dark text-white scale-105'

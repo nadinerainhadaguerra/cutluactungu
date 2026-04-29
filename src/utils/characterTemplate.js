@@ -117,6 +117,8 @@ export function createCharacterTemplate(name, password) {
     portraitScale: 1,
     portraitOffsetX: 0,
     portraitOffsetY: 0,
+    portraitNaturalWidth: 0,
+    portraitNaturalHeight: 0,
     setupComplete: false,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),

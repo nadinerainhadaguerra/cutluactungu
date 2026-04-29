@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { useTheme } from '../contexts/ThemeContext'
+import { useSubHeader } from '../contexts/SubHeaderContext'
 import { EncyclopediaButton } from './EncyclopediaPopup'
 import CharacterSheet from './CharacterSheet'
 import MasterDashboard from './MasterDashboard'
@@ -35,6 +36,7 @@ function ThemeToggle() {
 
 export default function Layout() {
   const { user, logout } = useAuth()
+  const { subHeader } = useSubHeader()
   const [chatOpen, setChatOpen] = useState(false)
   const [notesOpen, setNotesOpen] = useState(false)
   const [scenariosOpen, setScenariosOpen] = useState(false)
@@ -56,6 +58,9 @@ export default function Layout() {
     if (scenariosOpen) { setScenariosOpen(false) }
     else { setScenariosOpen(true); setNotesOpen(false) }
   }
+
+  // Sidebar top offset: accounts for secondary header bar when master views a character
+  const sidebarTop = subHeader ? 'top-[94px]' : 'top-[57px]'
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -128,6 +133,23 @@ export default function Layout() {
             </button>
           </div>
         </div>
+
+        {/* Secondary bar: back navigation when master views a character/NPC sheet */}
+        {subHeader && (
+          <div className="border-t border-white/10">
+            <div className="max-w-screen-2xl mx-auto px-4 py-2">
+              <button
+                onClick={subHeader.onBack}
+                className="flex items-center gap-2 text-sm text-white/80 hover:text-white transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+                {subHeader.label}
+              </button>
+            </div>
+          </div>
+        )}
       </header>
 
       {/* Main Content */}
@@ -144,7 +166,7 @@ export default function Layout() {
         <div
           className={`fixed inset-y-0 left-0 z-30 w-full md:w-80 transform transition-transform
                       duration-300 ${notesOpen ? 'translate-x-0' : '-translate-x-full'}
-                      top-[57px] bg-white dark:bg-gray-900 border-r border-achtung-green/20
+                      ${sidebarTop} bg-white dark:bg-gray-900 border-r border-achtung-green/20
                       dark:border-achtung-green/10 shadow-2xl`}
         >
           <NotesPanel
@@ -158,7 +180,7 @@ export default function Layout() {
           <div
             className={`fixed inset-y-0 left-0 z-30 w-full md:w-80 transform transition-transform
                         duration-300 ${scenariosOpen ? 'translate-x-0' : '-translate-x-full'}
-                        top-[57px] bg-white dark:bg-gray-900 border-r border-achtung-green/20
+                        ${sidebarTop} bg-white dark:bg-gray-900 border-r border-achtung-green/20
                         dark:border-achtung-green/10 shadow-2xl`}
           >
             <ScenariosPanel
@@ -173,7 +195,7 @@ export default function Layout() {
         <div
           className={`fixed inset-y-0 right-0 z-30 w-full md:w-96 transform transition-transform
                       duration-300 ${chatOpen ? 'translate-x-0' : 'translate-x-full'}
-                      top-[57px] bg-white dark:bg-gray-900 border-l border-achtung-green/20
+                      ${sidebarTop} bg-white dark:bg-gray-900 border-l border-achtung-green/20
                       dark:border-achtung-green/10 shadow-2xl`}
         >
           <Chat
@@ -186,19 +208,19 @@ export default function Layout() {
         {/* Overlay for mobile */}
         {chatOpen && (
           <div
-            className="fixed inset-0 bg-black/50 z-20 md:hidden top-[57px]"
+            className={`fixed inset-0 bg-black/50 z-20 md:hidden ${sidebarTop}`}
             onClick={() => setChatOpen(false)}
           />
         )}
         {notesOpen && (
           <div
-            className="fixed inset-0 bg-black/50 z-20 md:hidden top-[57px]"
+            className={`fixed inset-0 bg-black/50 z-20 md:hidden ${sidebarTop}`}
             onClick={() => setNotesOpen(false)}
           />
         )}
         {scenariosOpen && (
           <div
-            className="fixed inset-0 bg-black/50 z-20 md:hidden top-[57px]"
+            className={`fixed inset-0 bg-black/50 z-20 md:hidden ${sidebarTop}`}
             onClick={() => setScenariosOpen(false)}
           />
         )}

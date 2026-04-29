@@ -2,6 +2,7 @@ import { ThemeProvider } from './contexts/ThemeContext'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { SelectionProvider } from './contexts/SelectionContext'
 import { MasterSettingsProvider } from './contexts/MasterSettingsContext'
+import { SubHeaderProvider } from './contexts/SubHeaderContext'
 import LoginScreen from './components/LoginScreen'
 import Layout from './components/Layout'
 
@@ -21,9 +22,11 @@ export default function App() {
       <AuthProvider>
         <SelectionProvider>
           <MasterSettingsProvider>
-            <div className="min-h-screen parchment-bg transition-colors duration-300">
-              <AppContent />
-            </div>
+            <SubHeaderProvider>
+              <div className="min-h-screen parchment-bg transition-colors duration-300">
+                <AppContent />
+              </div>
+            </SubHeaderProvider>
           </MasterSettingsProvider>
         </SelectionProvider>
       </AuthProvider>

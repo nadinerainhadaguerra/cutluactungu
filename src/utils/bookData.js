@@ -984,7 +984,7 @@ export const CARACTERISTICAS = [
     periciasLivres: 2,
     restricaoPericiasLivres: null,
     periciasEspecial: null,
-    palavrasChaveTalento: ['Observar', 'Estranheza'],
+    palavrasChaveTalento: ['Observar', 'Estranho'],
     verdadeSugerida: 'Andarilho dos Sonhos',
     pertences: 'Um animal de estimação à sua escolha, que é dedicado a você e parece ver coisas que não estão lá.',
     pertencesEstruturado: [
@@ -1020,7 +1020,7 @@ export const CARACTERISTICAS = [
     periciasLivres: 4,
     restricaoPericiasLivres: null,
     periciasEspecial: null,
-    palavrasChaveTalento: ['Estranheza'],
+    palavrasChaveTalento: ['Estranho'],
     verdadeSugerida: 'Cobaia em Experimentos',
     pertences: 'Algum tipo de identificação estranha, sigilos ou marcas misteriosas em sua pele, ou talvez até mesmo documentos incompletos, ou um uniforme estranho pertencente ao seu tempo como cobaia.',
     pertencesEstruturado: [
@@ -1074,7 +1074,7 @@ export const CARACTERISTICAS = [
     periciasLivres: 3,
     restricaoPericiasLivres: null,
     periciasEspecial: 'observar_persuasao_ou_furtividade',
-    palavrasChaveTalento: ['Estranheza'],
+    palavrasChaveTalento: ['Estranho'],
     verdadeSugerida: 'Tem um Artefato Ocultista',
     pertences: 'Um artefato ocultista, como um temido tomo do Mythôs, o símbolo de uma divindade, um espelho de obsidiana usado para divinações ou uma caixa que sussurra para você durante o sono, mas que está adormecida... por enquanto. A natureza desse artefato precisa ser debatida com o mestre.',
     pertencesEstruturado: [
@@ -1092,7 +1092,7 @@ export const CARACTERISTICAS = [
     periciasLivres: 1,
     restricaoPericiasLivres: null,
     periciasEspecial: null,
-    palavrasChaveTalento: ['Furtividade', 'Resiliência', 'Estranheza'],
+    palavrasChaveTalento: ['Furtividade', 'Resiliência', 'Estranho'],
     verdadeSugerida: 'Criado por um Culto',
     pertences: 'Vestes cerimoniais, símbolos, amuletos e outros objetos pessoais do culto.',
     pertencesEstruturado: [
@@ -1128,7 +1128,7 @@ export const CARACTERISTICAS = [
     periciasLivres: 2,
     restricaoPericiasLivres: null,
     periciasEspecial: null,
-    palavrasChaveTalento: ['Estranheza'],
+    palavrasChaveTalento: ['Estranho'],
     verdadeSugerida: 'Leu um Livro Ocultista',
     pertences: 'Uma coleção de notas pessoais sobre um tomo ocultista.',
     pertencesEstruturado: [
@@ -1267,7 +1267,7 @@ export const TALENTOS = [
     palavrasChave: [],
     periciaSelecionavel: true,
     avancado: false,
-    efeito: 'Ao escolher este talento, selecione uma única perícia. Sempre que fizer um teste usando a perícia escolhida e comprar d20s extras gerando Ameaça para o mestre, você pode rejogar um d20 dessa parada de dados.',
+    efeito: 'Quando você assume riscos calculados, tende a ter sucesso com mais frequência do que parece razoável. Ao escolher este talento, selecione uma única perícia. Sempre que fizer um teste usando a perícia escolhida e comprar d20s extras gerando Ameaça para o mestre, você pode rejogar um d20 dessa parada de dados.',
   },
   {
     id: 'cauteloso',
@@ -1275,7 +1275,7 @@ export const TALENTOS = [
     palavrasChave: [],
     periciaSelecionavel: true,
     avancado: false,
-    efeito: 'Ao escolher este talento, selecione uma única perícia. Sempre que fizer um teste usando a perícia escolhida e comprar d20s extras gastando ímpeto, você pode rejogar um d20 dessa parada de dados.',
+    efeito: 'Você é paciente e circunspecto, agindo apenas quando as probabilidades estão a seu favor. Ao escolher este talento, selecione uma única perícia. Sempre que fizer um teste usando a perícia escolhida e comprar d20s extras gastando ímpeto, você pode rejogar um d20 dessa parada de dados.',
   },
   {
     id: 'conselheiro',
@@ -1283,7 +1283,7 @@ export const TALENTOS = [
     palavrasChave: [],
     periciaSelecionavel: true,
     avancado: false,
-    efeito: 'Ao escolher este talento, selecione uma única perícia. Sempre que você prestar auxílio a um aliado e usar a perícia escolhida, o aliado pode rejogar um dado da parada de dados dele.',
+    efeito: 'Você tem um talento especial para orientar os outros durante problemas. Ao escolher este talento, selecione uma única perícia. Sempre que você prestar auxílio a um aliado e usar a perícia escolhida, o aliado pode rejogar um dado da parada de dados dele.',
   },
   {
     id: 'colaboracao',
@@ -1291,7 +1291,7 @@ export const TALENTOS = [
     palavrasChave: ['Avançado'],
     periciaSelecionavel: true,
     avancado: true,
-    efeito: 'Ao escolher este talento, selecione uma única perícia com graduação 3 ou mais. Sempre que um aliado fizer um teste usando a perícia escolhida, e você puder se comunicar com ele, gaste 2 de ímpeto para permitir que esse aliado use seu valor nessa perícia e um dos seus focos (se for aplicável).',
+    efeito: 'Você treinou seus aliados para confiarem em sua experiência, e o esforço valeu a pena. Ao escolher este talento, selecione uma única perícia com graduação 3 ou mais. Sempre que um aliado fizer um teste usando a perícia escolhida, e você puder se comunicar com ele, gaste 2 de ímpeto para permitir que esse aliado use seu valor nessa perícia e um dos seus focos (se for aplicável).',
   },
   {
     id: 'mente-fria-sob-pressao',
@@ -1299,7 +1299,7 @@ export const TALENTOS = [
     palavrasChave: ['Fortuna'],
     periciaSelecionavel: true,
     avancado: false,
-    efeito: 'Ao escolher este talento, selecione uma única perícia. Quando fizer um teste usando a perícia escolhida, você pode gastar um ponto de Fortuna para ser bem-sucedido automaticamente, mas sem gerar ímpeto.',
+    efeito: 'Quando as coisas ficam feias, você respira fundo e faz o seu trabalho. Ao escolher este talento, selecione uma única perícia. Quando fizer um teste usando a perícia escolhida, você pode gastar um ponto de Fortuna para ser bem-sucedido automaticamente, mas sem gerar ímpeto.',
   },
 
   // ----------------------------------------------------------
@@ -1499,7 +1499,7 @@ export const TALENTOS = [
     palavrasChave: ['Engenharia'],
     periciaSelecionavel: false,
     avancado: false,
-    efeito: 'Você está acostumado a se contentar com o que consegue retirar de outras máquinas. Você pode passar meia hora desmontando uma máquina e recuperando peças úteis com um teste Médio (D1) de Discernimento + Engenharia. Se for bem-sucedido, você recupera peças de reposição o suficiente para reabastecer os recursos de um kit de ferramentas de mecânico ou de eletricista.',
+    efeito: 'Você está acostumado a se contentar com o que consegue retirar de outras máquinas. Você pode passar meia hora desmontando uma máquina e recuperando peças úteis com um teste Médio (D1) de Discernimento + Engenharia. Se for bem-sucedido, você recupera peças de reposição o suficiente para reabastecer os recursos de um kit de ferramentas de mecânico ou de eletricista. Esse teste pode ter sucesso a um custo, o que faz o item que você está desmontando ser destruído.',
   },
   {
     id: 'mao-na-massa',
@@ -1519,12 +1519,12 @@ export const TALENTOS = [
   },
 
   // ----------------------------------------------------------
-  // ESTRANHEZA
+  // ESTRANHO
   // ----------------------------------------------------------
   {
     id: 'insensivel-aos-horrores',
     nome: 'Insensível aos Horrores',
-    palavrasChave: ['Estranheza'],
+    palavrasChave: ['Estranho'],
     periciaSelecionavel: false,
     avancado: false,
     efeito: 'Por alguma razão, sangue, morte e violência não o afetam mentalmente. Você aumenta sua resistência de Coragem em +6 e pode rejogar 1d20 em qualquer teste para determinar se ganharia uma cicatriz mental. Contudo, as outras pessoas consideram seus modos desagradáveis, aumentando em +1 a margem de complicação de todos os seus testes de Persuasão.',
@@ -1532,7 +1532,7 @@ export const TALENTOS = [
   {
     id: 'intuicao-bizarra',
     nome: 'Intuição Bizarra',
-    palavrasChave: ['Estranheza'],
+    palavrasChave: ['Estranho'],
     periciaSelecionavel: false,
     avancado: false,
     efeito: 'Sua mente muitas vezes lhe apresenta vislumbres de coisas que você não teria como saber. Uma vez por cena, você pode gerar 1 de Ameaça para Obter Informação (faça uma pergunta ao Mestre) sem precisar de um teste.',
@@ -1540,15 +1540,15 @@ export const TALENTOS = [
   {
     id: 'pressentimento-salvador',
     nome: 'Pressentimento Salvador',
-    palavrasChave: ['Estranheza'],
+    palavrasChave: ['Estranho'],
     periciaSelecionavel: false,
     avancado: false,
-    efeito: 'De vez em quando, parece que você evita por pouco o desastre graças a uma mão guia desconhecida. Uma vez por sessão, quando sofrer um ferimento, você pode gerar 3 de Ameaça para evitá-lo. Ao critério do Mestre, você pode ter a chance de evitar outro tipo de infortúnio em troca de gerar 3 de Ameaça.',
+    efeito: 'De vez em quando, parece que você evita por pouco o desastre graças a uma mão guia desconhecida. Ninguém sabe como você evita esses destinos, mas a má sorte parece cair sobre aqueles à sua volta. Uma vez por sessão, quando sofrer um ferimento, você pode gerar 3 de Ameaça para evitá-lo. Ao critério do Mestre, você pode ter a chance de evitar outro tipo de infortúnio em troca de gerar 3 de Ameaça.',
   },
   {
     id: 'ocultista-amador',
     nome: 'Ocultista Amador',
-    palavrasChave: ['Conjurador', 'Estranheza'],
+    palavrasChave: ['Conjurador', 'Estranho'],
     periciaSelecionavel: false,
     avancado: false,
     efeito: 'Você se meteu com forças ocultas além da sua compreensão. Agora você é um conjurador da prática amador, conforme descrito no Capítulo 9: A Magia e o Mythôs.',
@@ -1556,18 +1556,18 @@ export const TALENTOS = [
   {
     id: 'pacto-menor',
     nome: 'Pacto Menor',
-    palavrasChave: ['Estranheza'],
+    palavrasChave: ['Estranho'],
     periciaSelecionavel: false,
     avancado: false,
-    efeito: 'Você descobriu que, se separar um pouco de comida e bebida à noite, tudo terá desaparecido pela manhã, e algo de bom acontecerá com você. Se você fizer pequenas oferendas a cada noite, ganhará um ponto de Fortuna adicional no início de cada aventura. Ao critério do Mestre, você obtém benefícios maiores com oferendas mais significativas.',
+    efeito: 'Você descobriu que, se separar um pouco de comida e bebida à noite, tudo terá desaparecido pela manhã, e algo de bom acontecerá com você. Você se pergunta o que pode acontecer se oferecesse mais do que apenas comida e bebida. Se você fizer pequenas oferendas a cada noite, ganhará um ponto de Fortuna adicional no início de cada aventura. Ao critério do Mestre, você obtém benefícios maiores com oferendas mais significativas.',
   },
   {
     id: 'poder-mistico',
     nome: 'Poder Místico',
-    palavrasChave: ['Estranheza'],
+    palavrasChave: ['Estranho'],
     periciaSelecionavel: false,
     avancado: false,
-    efeito: 'Somente personagens conjuradores podem escolher este talento. Você se embrenhou nos mistérios imortais do Mythôs e nos segredos do tempo, retornando com maior aptidão em atividades arcanas. Você ganha uma verdade de personagem adicional: Vislumbrou o que os Mortais Não Deveriam Conhecer. Quando conjurar um feitiço, você pode aumentar o seu Poder em +2. Se fizer isso, todos os seus aliados ao alcance Curto sofrem 1 de estresse mental para cada Efeito obtido na jogada do Custo do feitiço.',
+    efeito: 'Somente personagens conjuradores podem escolher este talento. Você se embrenhou nos mistérios imortais do Mythôs e nos segredos do tempo, retornando com maior aptidão em atividades arcanas. Você ganha uma verdade de personagem adicional: Vislumbrou o que os Mortais Não Deveriam Conhecer, ou uma descrição semelhante do custo que esse conhecimento teve. Quando conjurar um feitiço, você pode aumentar o seu Poder em +2. Se fizer isso, todos os seus aliados ao alcance Curto sofrem 1 de estresse mental para cada Efeito obtido na jogada do Custo do feitiço, pois serão expostos aos segredos sobrenaturais que você aprendeu.',
   },
 
   // ----------------------------------------------------------
@@ -1707,7 +1707,7 @@ export const TALENTOS = [
     palavrasChave: ['Observar'],
     periciaSelecionavel: false,
     avancado: false,
-    efeito: 'Você consegue enxergar muito bem no escuro, permitindo atuar com eficácia até mesmo em ambientes de pouca luz. Você ignora qualquer aumento na Dificuldade ou margem de complicação causado pela penumbra, embora a escuridão total ainda o afete normalmente.',
+    efeito: 'Sua avó sempre falava que formiga faz bem para os olhos, e parece que você não tinha nojo quando elas entravam no açúcar, porque consegue enxergar muito bem no escuro, permitindo atuar com eficácia até mesmo em ambientes de pouca luz. Você ignora qualquer aumento na Dificuldade ou margem de complicação causado pela penumbra, embora a escuridão total ainda o afete normalmente.',
   },
   {
     id: 'revirar-tudo',
@@ -1787,7 +1787,7 @@ export const TALENTOS = [
     palavrasChave: ['Resiliência'],
     periciaSelecionavel: false,
     avancado: false,
-    efeito: 'Bebidas de alto teor alcoólico ajudam você a manter os nervos. Adicione um cantil de bebida alcoólica forte aos seus pertences. Quando você fizer a ação Tomar Fôlego para remover estresse de si ou de um aliado, você ou ele podem beber do cantil. Fazer isso remove 1 de estresse adicional. No entanto, se obtiver um efeito, o álcool entorpeceu suas habilidades, e você aumenta em +1 a margem de complicação de todas as perícias que tentar pelo restante da cena.',
+    efeito: 'Bebidas de alto teor alcoólico ajudam você a manter os nervos. Adicione um cantil de bebida alcoólica forte aos seus pertences. Quando você fizer a ação Tomar Fôlego para remover estresse de si ou de um aliado, você ou ele podem beber do cantil. Fazer isso remove 1 de estresse adicional. No entanto, se obtiver um efeito, o álcool entorpeceu suas habilidades, e você aumenta em +1 a margem de complicação de todas as perícias que tentar pelo restante da cena. Você não pode usar este talento se a bebida acabar (possivelmente como uma complicação), embora nunca seja muito difícil conseguir uma recarga.',
   },
   {
     id: 'corajoso',
@@ -1899,7 +1899,7 @@ export const TALENTOS = [
     palavrasChave: ['Táticas'],
     periciaSelecionavel: false,
     avancado: false,
-    efeito: 'Você dá instruções precisas, permitindo que seus aliados assumam posições favoráveis. Em uma cena de ação, você pode gastar uma ação menor para deixar um aliado fazer uma ação menor imediata. Como uma ação maior, você pode fazer um teste Médio (D1) de Coordenação + Táticas para conceder uma ação menor imediata a uma quantidade de aliados igual à sua perícia Táticas.',
+    efeito: 'Você dá instruções precisas, permitindo que seus aliados assumam posições favoráveis. Em uma cena de ação, você pode gastar uma ação menor para deixar um aliado fazer uma ação menor imediata. Como uma ação maior, você pode fazer um teste Médio (D1) de Coordenação + Táticas para conceder uma ação menor imediata a uma quantidade de aliados igual à sua perícia Táticas. Você precisa estar se comunicando com o aliado a quem quer conceder essa ação menor extra.',
   },
   {
     id: 'direcionar',
@@ -2397,12 +2397,12 @@ export const ARMAS = [
   // RIFLES E FUZIS — ALIADOS
   // ----------------------------------------------------------
   { id: 'carabina-berthier-m16', nome: 'Carabina Berthier Modèle 1892 M16', categoria: 'Rifle/Fuzil', origem: 'Aliada', foco: 'Rifles e Fuzis', alcance: 'Médio', estresse: '5', efeito: null, barragem: 'Feroz', tamanho: 'Grande', qualidades: 'Confiável', restricao: '2' },
-  { id: 'carabina-de-lisle', nome: 'Carabina De Lisle Commando Mk.I', categoria: 'Rifle/Fuzil', origem: 'Aliada', foco: 'Rifles e Fuzis', alcance: 'Médio', estresse: '4', efeito: null, barragem: 'Feroz', tamanho: 'Grande', qualidades: 'Confiável, Sutil', restricao: '3' },
-  { id: 'carabina-m1', nome: 'Carabina M1', categoria: 'Rifle/Fuzil', origem: 'Aliada', foco: 'Rifles e Fuzis', alcance: 'Médio', estresse: '6', efeito: null, barragem: 'Feroz', tamanho: 'Grande', qualidades: 'Confiável, Imprecisa', restricao: '2' },
+  { id: 'carabina-de-lisle', nome: 'Carabina De Lisle Commando Mk.I', categoria: 'Rifle/Fuzil', origem: 'Aliada', foco: 'Rifles e Fuzis', alcance: 'Médio', estresse: '4', efeito: null, barragem: 'Feroz', tamanho: 'Grande', qualidades: 'Sutil', restricao: '3' },
+  { id: 'carabina-m1', nome: 'Carabina M1', categoria: 'Rifle/Fuzil', origem: 'Aliada', foco: 'Rifles e Fuzis', alcance: 'Médio', estresse: '4', efeito: null, barragem: 'Feroz', tamanho: 'Grande', qualidades: 'Confiável', restricao: '2' },
   { id: 'espingarda-winchester-m12', nome: 'Espingarda Winchester M12', categoria: 'Rifle/Fuzil', origem: 'Aliada', foco: 'Combate Próximo', alcance: 'Curto', estresse: '5', efeito: null, barragem: 'Feroz', tamanho: 'Grande', qualidades: 'Confiável', restricao: '2' },
-  { id: 'fuzil-lee-enfield', nome: 'Fuzil Lee-Enfield', categoria: 'Rifle/Fuzil', origem: 'Aliada', foco: 'Rifles e Fuzis', alcance: 'Médio', estresse: '5', efeito: null, barragem: 'Feroz', tamanho: 'Grande', qualidades: 'Confiável', restricao: '2' },
-  { id: 'fuzil-m1-garand', nome: 'Fuzil M1 Garand', categoria: 'Rifle/Fuzil', origem: 'Aliada', foco: 'Rifles e Fuzis', alcance: 'Longo', estresse: '5', efeito: null, barragem: 'Feroz', tamanho: 'Grande', qualidades: 'Confiável', restricao: '2' },
-  { id: 'fuzil-mas-1936', nome: 'Fuzil MAS Modèle 1936', categoria: 'Rifle/Fuzil', origem: 'Aliada', foco: 'Rifles e Fuzis', alcance: 'Médio', estresse: '5', efeito: null, barragem: 'Feroz', tamanho: 'Grande', qualidades: 'Confiável, Preciso', restricao: '3' },
+  { id: 'fuzil-lee-enfield', nome: 'Fuzil Lee-Enfield', categoria: 'Rifle/Fuzil', origem: 'Aliada', foco: 'Rifles e Fuzis', alcance: 'Médio', estresse: '6', efeito: null, barragem: 'Feroz', tamanho: 'Grande', qualidades: 'Confiável', restricao: '2' },
+  { id: 'fuzil-m1-garand', nome: 'Fuzil M1 Garand', categoria: 'Rifle/Fuzil', origem: 'Aliada', foco: 'Rifles e Fuzis', alcance: 'Médio', estresse: '5', efeito: null, barragem: 'Feroz', tamanho: 'Grande', qualidades: 'Confiável', restricao: '2' },
+  { id: 'fuzil-mas-1936', nome: 'Fuzil MAS Modèle 1936', categoria: 'Rifle/Fuzil', origem: 'Aliada', foco: 'Rifles e Fuzis', alcance: 'Médio', estresse: '5', efeito: null, barragem: 'Feroz', tamanho: 'Grande', qualidades: 'Confiável', restricao: '2' },
   { id: 'springfield-m1903', nome: 'Springfield M1903', categoria: 'Rifle/Fuzil', origem: 'Aliada', foco: 'Rifles e Fuzis', alcance: 'Longo', estresse: '5', efeito: null, barragem: 'Feroz', tamanho: 'Grande', qualidades: 'Confiável, Preciso', restricao: '3' },
 
   // ----------------------------------------------------------
@@ -2410,10 +2410,10 @@ export const ARMAS = [
   // ----------------------------------------------------------
   { id: 'bar', nome: 'Fuzil Browning Automatic (BAR)', categoria: 'Submetralhadora/MG', origem: 'Aliada', foco: 'Rifles e Fuzis', alcance: 'Médio', estresse: '5', efeito: null, barragem: 'Área', tamanho: 'Grande', qualidades: 'Imprecisa', restricao: '3' },
   { id: 'metralhadora-bren', nome: 'Metralhadora Bren', categoria: 'Submetralhadora/MG', origem: 'Aliada', foco: 'Rifles e Fuzis', alcance: 'Médio', estresse: '5', efeito: null, barragem: 'Área', tamanho: 'Grande', qualidades: 'Imprecisa', restricao: '3' },
-  { id: 'metralhadora-browning-m1919', nome: 'Metralhadora Browning M1919', categoria: 'Submetralhadora/MG', origem: 'Aliada', foco: 'Armas Pesadas', alcance: 'Médio', estresse: '7', efeito: 'Agravamento', barragem: 'Área', tamanho: 'Grande', qualidades: 'Imprecisa', restricao: '3' },
+  { id: 'metralhadora-browning-m1919', nome: 'Metralhadora Browning M1919', categoria: 'Submetralhadora/MG', origem: 'Aliada', foco: 'Armas Pesadas', alcance: 'Médio', estresse: '7', efeito: null, barragem: 'Área', tamanho: 'Grande', qualidades: 'Agravamento, Imprecisa', restricao: '3' },
   { id: 'metralhadora-johnson-m1941', nome: 'Metralhadora Johnson M1941', categoria: 'Submetralhadora/MG', origem: 'Aliada', foco: 'Rifles e Fuzis', alcance: 'Médio', estresse: '5', efeito: null, barragem: 'Área', tamanho: 'Grande', qualidades: 'Imprecisa', restricao: '3' },
   { id: 'metralhadora-mac-1924-m29', nome: 'Metralhadora MAC Modèle 1924-M29', categoria: 'Submetralhadora/MG', origem: 'Aliada', foco: 'Rifles e Fuzis', alcance: 'Médio', estresse: '5', efeito: null, barragem: 'Área', tamanho: 'Grande', qualidades: 'Imprecisa', restricao: '3' },
-  { id: 'metralhadora-vickers', nome: 'Metralhadora Vickers', categoria: 'Submetralhadora/MG', origem: 'Aliada', foco: 'Armas Pesadas', alcance: 'Médio', estresse: '7', efeito: 'Agravamento', barragem: 'Área', tamanho: 'Grande', qualidades: 'Imprecisa', restricao: '3' },
+  { id: 'metralhadora-vickers', nome: 'Metralhadora Vickers', categoria: 'Submetralhadora/MG', origem: 'Aliada', foco: 'Armas Pesadas', alcance: 'Médio', estresse: '7', efeito: null, barragem: 'Área', tamanho: 'Grande', qualidades: 'Agravamento, Imprecisa', restricao: '3' },
   { id: 'emp-35', nome: 'Pistolet Mitrailleur ERMA Modèle 1935 (EMP-35)', categoria: 'Submetralhadora/MG', origem: 'Aliada', foco: 'Rifles e Fuzis', alcance: 'Médio', estresse: '5', efeito: null, barragem: 'Atordoante', tamanho: 'Grande', qualidades: 'Imprecisa, Inconstante', restricao: '3' },
   { id: 'sten-mk2s', nome: 'Sten Mk IIS SMG Suprimida', categoria: 'Submetralhadora/MG', origem: 'Aliada', foco: 'Combate Próximo', alcance: 'Curto', estresse: '3', efeito: null, barragem: 'Atordoante', tamanho: 'Grande', qualidades: 'Imprecisa, Sutil', restricao: '3' },
   { id: 'sten-mk5', nome: 'Submetralhadora Sten Mk. V', categoria: 'Submetralhadora/MG', origem: 'Aliada', foco: 'Combate Próximo', alcance: 'Curto', estresse: '4', efeito: null, barragem: 'Atordoante', tamanho: 'Grande', qualidades: 'Imprecisa', restricao: '2' },
@@ -2423,13 +2423,13 @@ export const ARMAS = [
   // ----------------------------------------------------------
   // ARMAS PESADAS E ARTILHARIA — ALIADAS
   // ----------------------------------------------------------
-  { id: 'piat', nome: 'Arma Anti-Tanque PIAT', categoria: 'Arma Pesada', origem: 'Aliada', foco: 'Armas Pesadas', alcance: 'Médio', estresse: '6', efeito: 'Agravamento, Mata-Gigante', barragem: 'Perfurante 1, Feroz', tamanho: 'Grande', qualidades: 'Desajeitada, Pesada, Imprecisa, Munição', restricao: '3' },
-  { id: 'bazuca-m1a1', nome: 'Bazuca M1A1', categoria: 'Arma Pesada', origem: 'Aliada', foco: 'Armas Pesadas', alcance: 'Médio', estresse: '6', efeito: 'Agravamento, Mata-Gigante', barragem: 'Feroz', tamanho: 'Grande', qualidades: 'Desajeitada, Pesada, Imprecisa, Munição', restricao: '3' },
-  { id: 'bazuca-m9', nome: 'Bazuca M9', categoria: 'Arma Pesada', origem: 'Aliada', foco: 'Armas Pesadas', alcance: 'Médio', estresse: '6', efeito: 'Agravamento, Mata-Gigante', barragem: 'Perfurante 1, Feroz', tamanho: 'Grande', qualidades: 'Desajeitada, Pesada, Imprecisa, Munição', restricao: '3' },
-  { id: 'lanca-chamas-lifebuoy', nome: 'Lança-Chamas Portátil Lifebuoy No. 2 Mk.I', categoria: 'Arma Pesada', origem: 'Aliada', foco: 'Armas Pesadas', alcance: 'Curto', estresse: '5', efeito: 'Agravamento, Debilitante', barragem: 'Persistente 4, Área', tamanho: 'Grande', qualidades: null, restricao: '3' },
-  { id: 'morteiro-2pol', nome: 'Morteiro de 2 Polegadas', categoria: 'Arma Pesada', origem: 'Aliada', foco: 'Armas Pesadas', alcance: 'Extremo', estresse: '6', efeito: 'Agravamento', barragem: 'Área, Atordoante', tamanho: 'Pequeno', qualidades: 'Pesada, Indireta', restricao: '3' },
-  { id: 'morteiro-m2', nome: 'Morteiro M2', categoria: 'Arma Pesada', origem: 'Aliada', foco: 'Armas Pesadas', alcance: 'Extremo', estresse: '7', efeito: 'Agravamento', barragem: 'Área, Atordoante', tamanho: 'Grande', qualidades: 'Pesada, Indireta', restricao: '3' },
-  { id: 'rifle-antitanque-boys', nome: 'Rifle Antitanque Boys', categoria: 'Arma Pesada', origem: 'Aliada', foco: 'Armas Pesadas', alcance: 'Longo', estresse: '7', efeito: 'Agravamento', barragem: 'Feroz', tamanho: 'Grande', qualidades: 'Preciso, Desajeitada, Pesada', restricao: '3' },
+  { id: 'piat', nome: 'Arma Anti-Tanque PIAT', categoria: 'Arma Pesada', origem: 'Aliada', foco: 'Armas Pesadas', alcance: 'Médio', estresse: '6', efeito: null, barragem: 'Perfurante 1, Feroz', tamanho: 'Grande', qualidades: 'Desajeitada, Agravamento, Mata-Gigante, Pesada, Imprecisa, Munição', restricao: '3' },
+  { id: 'bazuca-m1a1', nome: 'Bazuca M1A1', categoria: 'Arma Pesada', origem: 'Aliada', foco: 'Armas Pesadas', alcance: 'Médio', estresse: '6', efeito: null, barragem: 'Feroz', tamanho: 'Grande', qualidades: 'Desajeitada, Agravamento, Mata-Gigante, Pesada, Imprecisa, Munição', restricao: '3' },
+  { id: 'bazuca-m9', nome: 'Bazuca M9', categoria: 'Arma Pesada', origem: 'Aliada', foco: 'Armas Pesadas', alcance: 'Médio', estresse: '6', efeito: null, barragem: 'Perfurante 1, Feroz', tamanho: 'Grande', qualidades: 'Desajeitada, Agravamento, Mata-Gigante, Pesada, Imprecisa, Munição', restricao: '3' },
+  { id: 'lanca-chamas-lifebuoy', nome: 'Lança-Chamas Portátil Lifebuoy No. 2 Mk.I', categoria: 'Arma Pesada', origem: 'Aliada', foco: 'Armas Pesadas', alcance: 'Curto', estresse: '5', efeito: null, barragem: 'Persistente 4, Área', tamanho: 'Grande', qualidades: 'Agravamento, Debilitante', restricao: '3' },
+  { id: 'morteiro-2pol', nome: 'Morteiro de 2 Polegadas', categoria: 'Arma Pesada', origem: 'Aliada', foco: 'Armas Pesadas', alcance: 'Extremo', estresse: '6', efeito: null, barragem: 'Área, Atordoante', tamanho: 'Pequeno', qualidades: 'Agravamento, Pesada, Indireta', restricao: '3' },
+  { id: 'morteiro-m2', nome: 'Morteiro M2', categoria: 'Arma Pesada', origem: 'Aliada', foco: 'Armas Pesadas', alcance: 'Extremo', estresse: '7', efeito: null, barragem: 'Área, Atordoante', tamanho: 'Grande', qualidades: 'Agravamento, Pesada, Indireta', restricao: '3' },
+  { id: 'rifle-antitanque-boys', nome: 'Rifle Antitanque Boys', categoria: 'Arma Pesada', origem: 'Aliada', foco: 'Armas Pesadas', alcance: 'Longo', estresse: '7', efeito: null, barragem: 'Feroz', tamanho: 'Grande', qualidades: 'Preciso, Desajeitada, Agravamento, Pesada', restricao: '3' },
 
   // ----------------------------------------------------------
   // GRANADAS E BOMBAS — ALIADAS
@@ -2474,9 +2474,9 @@ export const ARMAS = [
   // ----------------------------------------------------------
   // ARMAS PESADAS E GRANADAS — ALEMÃS
   // ----------------------------------------------------------
-  { id: 'flammenwerfer-41', nome: 'Flammenwerfer 41 (FmW 41)', categoria: 'Arma Pesada', origem: 'Alemã', foco: 'Armas Pesadas', alcance: 'Médio', estresse: '5', efeito: 'Agravamento, Debilitante', barragem: 'Persistente 4, Área', tamanho: 'Grande', qualidades: null, restricao: '—' },
-  { id: 'granatwerfer-36', nome: 'Granatwerfer 36 (GrW 36)', categoria: 'Arma Pesada', origem: 'Alemã', foco: 'Armas Pesadas', alcance: 'Extremo', estresse: '7', efeito: 'Agravamento', barragem: 'Área, Atordoante', tamanho: 'Grande', qualidades: 'Indireta, Pesada', restricao: '—' },
-  { id: 'panzerfaust-60', nome: 'Panzerfaust 60', categoria: 'Arma Pesada', origem: 'Alemã', foco: 'Armas Pesadas', alcance: 'Longo', estresse: '5', efeito: 'Agravamento, Mata-Gigante', barragem: 'Perfurante 1, Feroz', tamanho: 'Grande', qualidades: 'Desajeitada, Munição, Imprecisa, Pesada', restricao: '—' },
+  { id: 'flammenwerfer-41', nome: 'Flammenwerfer 41 (FmW 41)', categoria: 'Arma Pesada', origem: 'Alemã', foco: 'Armas Pesadas', alcance: 'Médio', estresse: '5', efeito: null, barragem: 'Persistente 4, Área', tamanho: 'Grande', qualidades: 'Agravamento, Debilitante', restricao: '—' },
+  { id: 'granatwerfer-36', nome: 'Granatwerfer 36 (GrW 36)', categoria: 'Arma Pesada', origem: 'Alemã', foco: 'Armas Pesadas', alcance: 'Extremo', estresse: '7', efeito: null, barragem: 'Área, Atordoante', tamanho: 'Grande', qualidades: 'Agravamento, Indireta, Pesada', restricao: '—' },
+  { id: 'panzerfaust-60', nome: 'Panzerfaust 60', categoria: 'Arma Pesada', origem: 'Alemã', foco: 'Armas Pesadas', alcance: 'Longo', estresse: '5', efeito: null, barragem: 'Perfurante 1, Feroz', tamanho: 'Grande', qualidades: 'Agravamento, Mata-Gigante, Desajeitada, Munição, Imprecisa, Pesada', restricao: '—' },
   { id: 'stielhandgranate-24', nome: 'Stielhandgranate 24', categoria: 'Granada', origem: 'Alemã', foco: 'Arremessável', alcance: 'Curto', estresse: '5', efeito: null, barragem: 'Área, Atordoante', tamanho: '3 por Pequeno', qualidades: 'Munição', restricao: '—' },
 ]
 
@@ -2492,9 +2492,6 @@ export const EFEITOS_DESC = {
   'Área':        'Pode atingir 1 alvo adicional por ⚔ obtido, desde que esteja no mesmo alcance.',
   'Violento':    'Se pelo menos 1 ⚔ for obtido e o ataque causar 1 ou mais Ferimentos, causa 1 Ferimento extra.',
   'Contenção':   'O alvo fica Agarrado (imobilizado). Pode escapar com um teste de Atletismo ou Combater.',
-  'Agravamento': 'Os Ferimentos causados são mais difíceis de tratar.',
-  'Debilitante': 'O alvo sofre uma condição debilitante além do dano normal.',
-  'Mata-Gigante':'Causa dano adicional contra alvos com alta Resistência ou blindagem.',
 }
 
 // ============================================================
@@ -2515,6 +2512,9 @@ export const QUALIDADES_DESC = {
   'Desajeitada':    'Requer espaço e esforço extra para manejar; penalidade em espaços confinados.',
   'Pesada':         'Requer suporte ou dois portadores para ser usada adequadamente.',
   'Indireta':       'Pode atingir alvos em cobertura total ou atrás de obstáculos.',
+  'Agravamento':    'Os Ferimentos causados são mais difíceis de tratar.',
+  'Debilitante':    'O alvo sofre uma condição debilitante além do dano normal.',
+  'Mata-Gigante':   'Causa dano adicional contra alvos com alta Resistência ou blindagem.',
 }
 
 // ============================================================

@@ -123,14 +123,14 @@ const TABS = [
 
 const PORTRAIT_W = 160
 const PORTRAIT_H = 200
-const PORTRAIT_OVAL = { cx: 80, cy: 118, rx: 58, ry: 52 }
+const PORTRAIT_OVAL = { cx: 80, cy: 117, rx: 69, ry: 55 }
 const CLIP = `ellipse(${PORTRAIT_OVAL.rx}px ${PORTRAIT_OVAL.ry}px at ${PORTRAIT_OVAL.cx}px ${PORTRAIT_OVAL.cy}px)`
 
-function PortraitFrame({ url, scale, offsetX, offsetY, onChange }) {
+function PortraitFrame({ url, scale, offsetX, offsetY, naturalWidth, naturalHeight, onChange }) {
   const [showUrlInput, setShowUrlInput] = useState(false)
   const [showEditor, setShowEditor] = useState(false)
   const [draftUrl, setDraftUrl] = useState('')
-  const [draft, setDraft] = useState({ scale: 1, offsetX: 0, offsetY: 0 })
+  const [draft, setDraft] = useState({ scale: 1, offsetX: 0, offsetY: 0, nw: 0, nh: 0 })
   const urlInputRef = useRef(null)
 
   useEffect(() => {
@@ -140,7 +140,7 @@ function PortraitFrame({ url, scale, offsetX, offsetY, onChange }) {
   const openClick = () => {
     setDraftUrl(url || '')
     if (url) {
-      setDraft({ scale: scale || 1, offsetX: offsetX || 0, offsetY: offsetY || 0 })
+      setDraft({ scale: scale || 1, offsetX: offsetX || 0, offsetY: offsetY || 0, nw: naturalWidth || 0, nh: naturalHeight || 0 })
       setShowEditor(true)
     } else {
       setShowUrlInput(true)
@@ -150,9 +150,15 @@ function PortraitFrame({ url, scale, offsetX, offsetY, onChange }) {
   const confirmUrl = () => {
     const trimmed = draftUrl.trim()
     if (!trimmed) { setShowUrlInput(false); return }
-    setDraft({ scale: scale || 1, offsetX: offsetX || 0, offsetY: offsetY || 0 })
+    setDraft({ scale: 1, offsetX: 0, offsetY: 0, nw: 0, nh: 0 })
     setShowUrlInput(false)
     setShowEditor(true)
+  }
+
+  const handleImgLoad = (e) => {
+    const nw = e.target.naturalWidth
+    const nh = e.target.naturalHeight
+    setDraft(prev => prev.nw ? prev : { ...prev, nw, nh })
   }
 
   const handleDragStart = (e) => {
@@ -180,45 +186,58 @@ function PortraitFrame({ url, scale, offsetX, offsetY, onChange }) {
       portraitScale: draft.scale,
       portraitOffsetX: draft.offsetX,
       portraitOffsetY: draft.offsetY,
+      portraitNaturalWidth: draft.nw,
+      portraitNaturalHeight: draft.nh,
     })
     setShowEditor(false)
   }
 
-  const portraitStyle = (s, ox, oy) => ({
-    position: 'absolute', inset: 0, width: '100%', height: '100%',
-    objectFit: 'cover',
-    transformOrigin: `${PORTRAIT_OVAL.cx}px ${PORTRAIT_OVAL.cy}px`,
-    transform: `translate(${ox || 0}px, ${oy || 0}px) scale(${s || 1})`,
-    userSelect: 'none',
-  })
+  const portraitStyle = (s, ox, oy, nw, nh) => {
+    if (nw && nh) {
+      const bs = Math.max((PORTRAIT_OVAL.rx * 2) / nw, (PORTRAIT_OVAL.ry * 2) / nh)
+      const W = nw * bs * (s || 1)
+      const H = nh * bs * (s || 1)
+      return {
+        position: 'absolute',
+        left: PORTRAIT_OVAL.cx - W / 2 + (ox || 0),
+        top: PORTRAIT_OVAL.cy - H / 2 + (oy || 0),
+        width: W,
+        height: 'auto',
+        maxWidth: 'none',
+        userSelect: 'none',
+      }
+    }
+    return {
+      position: 'absolute', inset: 0, width: '100%', height: '100%',
+      objectFit: 'cover',
+      transformOrigin: `${PORTRAIT_OVAL.cx}px ${PORTRAIT_OVAL.cy}px`,
+      transform: `translate(${ox || 0}px, ${oy || 0}px) scale(${s || 1})`,
+      userSelect: 'none',
+    }
+  }
 
   return (
     <div className="relative shrink-0" style={{ width: PORTRAIT_W, height: PORTRAIT_H }}>
-      {/* Portrait clipped to circle */}
-      <div style={{ position: 'absolute', inset: 0, clipPath: CLIP, zIndex: 0 }}>
-        {url ? (
-          <img src={url} alt="Retrato" draggable={false}
-            style={portraitStyle(scale, offsetX, offsetY)}
-            onError={e => { e.target.style.display = 'none' }}
-          />
-        ) : (
-          <div style={{
-            position: 'absolute', inset: 0,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            background: 'rgba(75,85,99,0.25)',
-          }}>
-            <svg style={{ width: 40, height: 40, opacity: 0.4 }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1}
-                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-            </svg>
+      {url ? (
+        <>
+          {/* Portrait clipped to oval */}
+          <div style={{ position: 'absolute', inset: 0, clipPath: CLIP, overflow: 'hidden', zIndex: 0 }}>
+            <img src={url} alt="Retrato" draggable={false}
+              style={portraitStyle(scale, offsetX, offsetY, naturalWidth, naturalHeight)}
+              onError={e => { e.target.style.display = 'none' }}
+            />
           </div>
-        )}
-      </div>
-
-      {/* Frame overlay */}
-      <img src="/cutuloframe.png" alt="" draggable={false}
-        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', zIndex: 1, pointerEvents: 'none' }}
-      />
+          {/* Frame overlay */}
+          <img src="/cutuloframe.png" alt="" draggable={false}
+            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', zIndex: 1, pointerEvents: 'none' }}
+          />
+        </>
+      ) : (
+        /* Default image — no frame */
+        <img src="/defaultimg.png" alt="Retrato padrão" draggable={false}
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 0 }}
+        />
+      )}
 
       {/* Hover/click button */}
       <button
@@ -276,68 +295,86 @@ function PortraitFrame({ url, scale, offsetX, offsetY, onChange }) {
       {showEditor && (
         <div className="fixed inset-0 bg-black/60 z-[70] flex items-center justify-center p-4"
              onClick={() => setShowEditor(false)}>
-          <div className="bg-white dark:bg-gray-900 rounded-xl shadow-2xl p-5 w-full max-w-xs
-                          border border-achtung-green/30"
+          <div className="bg-white dark:bg-gray-900 rounded-xl shadow-2xl p-5
+                          border border-achtung-green/30 flex gap-5 items-start"
                onClick={e => e.stopPropagation()}>
-            <p className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-4 text-center">
-              Ajustar retrato
-            </p>
 
-            {/* Preview with frame + clip */}
-            <div style={{ width: PORTRAIT_W, height: PORTRAIT_H, position: 'relative', margin: '0 auto 16px' }}>
-              <div style={{ position: 'absolute', inset: 0, clipPath: CLIP }}>
+            {/* Left column: controls */}
+            <div className="flex flex-col justify-between" style={{ width: 220, minHeight: PORTRAIT_H * 2 }}>
+              <div>
+                <p className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-4">
+                  Ajustar retrato
+                </p>
+                <div className="mb-2">
+                  <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mb-1">
+                    <span>Zoom</span>
+                    <span>{Math.round(draft.scale * 100)}%</span>
+                  </div>
+                  <input
+                    type="range" min={0.5} max={4} step={0.05}
+                    value={draft.scale}
+                    onChange={e => setDraft(prev => ({ ...prev, scale: parseFloat(e.target.value) }))}
+                    className="w-full accent-achtung-green"
+                  />
+                </div>
+                <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
+                  Arraste a imagem para reposicionar
+                </p>
+              </div>
+
+              <div className="flex flex-col gap-2 mt-4">
+                <button type="button" onClick={confirmEditor}
+                  className="w-full px-3 py-1.5 text-sm rounded-lg bg-achtung-green-dark text-white
+                             hover:bg-achtung-green transition-colors font-semibold text-center">
+                  Salvar
+                </button>
+                <button type="button" onClick={() => setShowEditor(false)}
+                  className="w-full px-3 py-1.5 text-sm rounded-lg text-gray-500 hover:bg-gray-100
+                             dark:hover:bg-gray-800 transition-colors text-center">
+                  Cancelar
+                </button>
+                <button type="button"
+                  onClick={() => { setShowEditor(false); setShowUrlInput(true) }}
+                  className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 underline transition-colors text-center">
+                  Trocar URL
+                </button>
+              </div>
+            </div>
+
+            {/* Right column: image preview (2× scaled) */}
+            <div style={{ width: PORTRAIT_W * 2, height: PORTRAIT_H * 2, position: 'relative', flexShrink: 0, overflow: 'hidden' }}>
+              <div style={{ width: PORTRAIT_W, height: PORTRAIT_H, transform: 'scale(2)', transformOrigin: '0 0' }}>
                 <img
                   src={draftUrl}
                   alt="Preview"
                   draggable={false}
                   style={{
-                    ...portraitStyle(draft.scale, draft.offsetX, draft.offsetY),
+                    ...portraitStyle(draft.scale, draft.offsetX, draft.offsetY, draft.nw, draft.nh),
                     cursor: 'grab',
+                    zIndex: 0,
                   }}
+                  onLoad={handleImgLoad}
                   onMouseDown={handleDragStart}
                 />
+                <svg
+                  style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 1 }}
+                  viewBox={`0 0 ${PORTRAIT_W} ${PORTRAIT_H}`}
+                  preserveAspectRatio="none"
+                >
+                  <defs>
+                    <mask id="editor-oval-mask">
+                      <rect width={PORTRAIT_W} height={PORTRAIT_H} fill="white" />
+                      <ellipse cx={PORTRAIT_OVAL.cx} cy={PORTRAIT_OVAL.cy} rx={PORTRAIT_OVAL.rx} ry={PORTRAIT_OVAL.ry} fill="black" />
+                    </mask>
+                  </defs>
+                  <rect width={PORTRAIT_W} height={PORTRAIT_H} fill="rgba(0,0,0,0.5)" mask="url(#editor-oval-mask)" />
+                </svg>
+                <img src="/cutuloframe.png" alt="" draggable={false}
+                  style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 2 }}
+                />
               </div>
-              <img src="/cutuloframe.png" alt="" draggable={false}
-                style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }}
-              />
             </div>
 
-            {/* Zoom slider */}
-            <div className="mb-2">
-              <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mb-1">
-                <span>Zoom</span>
-                <span>{Math.round(draft.scale * 100)}%</span>
-              </div>
-              <input
-                type="range" min={0.5} max={4} step={0.05}
-                value={draft.scale}
-                onChange={e => setDraft(prev => ({ ...prev, scale: parseFloat(e.target.value) }))}
-                className="w-full accent-achtung-green"
-              />
-            </div>
-            <p className="text-xs text-gray-400 dark:text-gray-500 text-center mb-4">
-              Arraste a imagem para reposicionar
-            </p>
-
-            <div className="flex items-center justify-between gap-2">
-              <button type="button"
-                onClick={() => { setShowEditor(false); setShowUrlInput(true) }}
-                className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 underline transition-colors">
-                Trocar URL
-              </button>
-              <div className="flex gap-2">
-                <button type="button" onClick={() => setShowEditor(false)}
-                  className="px-3 py-1.5 text-sm rounded-lg text-gray-500 hover:bg-gray-100
-                             dark:hover:bg-gray-800 transition-colors">
-                  Cancelar
-                </button>
-                <button type="button" onClick={confirmEditor}
-                  className="px-3 py-1.5 text-sm rounded-lg bg-achtung-green-dark text-white
-                             hover:bg-achtung-green transition-colors font-semibold">
-                  Salvar
-                </button>
-              </div>
-            </div>
           </div>
         </div>
       )}
@@ -541,6 +578,8 @@ export default function CharacterSheet({ characterName, isMaster = false, isNpc 
           scale={character.portraitScale || 1}
           offsetX={character.portraitOffsetX || 0}
           offsetY={character.portraitOffsetY || 0}
+          naturalWidth={character.portraitNaturalWidth || 0}
+          naturalHeight={character.portraitNaturalHeight || 0}
           onChange={data => updateCharacter(prev => ({ ...prev, ...data }))}
         />
       </div>

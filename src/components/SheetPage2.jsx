@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
+import ReactDOM from 'react-dom'
 import { storage } from '../services/storage'
 import { parseDiceExpression, rollChallengeDice } from '../utils/diceRoller'
 import { useSelection } from '../contexts/SelectionContext'
@@ -724,6 +725,208 @@ function WeaponCard({ weapon, onClickName, onClickImage, onRollDamage, onEdit, o
   )
 }
 
+/* ── Contact Tag ── */
+function ContactTag({ contact, onEdit, onDelete, onSendToChat }) {
+  const [showTooltip, setShowTooltip] = useState(false)
+  const [tooltipPos, setTooltipPos] = useState({ top: 0, left: 0, placement: 'above' })
+  const tooltipRef = useRef(null)
+  const tagRef = useRef(null)
+
+  useEffect(() => {
+    if (!showTooltip) return
+    function handleClick(e) {
+      const inTooltip = tooltipRef.current && tooltipRef.current.contains(e.target)
+      const inTag = tagRef.current && tagRef.current.contains(e.target)
+      if (!inTooltip && !inTag) setShowTooltip(false)
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [showTooltip])
+
+  const handleTagClick = () => {
+    if (!showTooltip && tagRef.current) {
+      const rect = tagRef.current.getBoundingClientRect()
+      const TW = 256, TH = 160
+      const above = rect.top >= TH + 8
+      let left = rect.left
+      if (left + TW > window.innerWidth - 8) left = window.innerWidth - TW - 8
+      if (left < 8) left = 8
+      setTooltipPos({ top: above ? rect.top - 8 : rect.bottom + 8, left, placement: above ? 'above' : 'below' })
+    }
+    setShowTooltip(v => !v)
+  }
+
+  return (
+    <>
+      <div className="rounded-lg border border-achtung-green/30 bg-gray-50 dark:bg-gray-800/60
+                      p-2 flex flex-col gap-1.5 hover:border-achtung-green/50 transition-colors">
+        <button
+          ref={tagRef}
+          type="button"
+          onClick={handleTagClick}
+          className="text-left w-full"
+          title="Ver detalhes"
+        >
+          <div className="text-xs font-semibold text-achtung-green-dark dark:text-achtung-green-light
+                          leading-tight truncate">
+            {contact.nome}
+          </div>
+          <div className="text-[10px] text-gray-500 dark:text-gray-400 truncate mt-0.5">
+            {contact.tipo || '—'}
+          </div>
+        </button>
+
+        <div className="flex items-center gap-1 border-t border-achtung-green/15 pt-1">
+          <button
+            type="button"
+            onClick={onEdit}
+            title="Editar"
+            className="flex-1 flex items-center justify-center py-0.5 rounded
+                       text-gray-400 hover:text-achtung-green-dark dark:hover:text-achtung-green-light
+                       hover:bg-achtung-green/10 transition-colors"
+          >
+            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            </svg>
+          </button>
+          <button
+            type="button"
+            onClick={onSendToChat}
+            title="Enviar no chat"
+            className="flex-1 flex items-center justify-center py-0.5 rounded
+                       text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20
+                       transition-colors"
+          >
+            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+            </svg>
+          </button>
+          <button
+            type="button"
+            onClick={onDelete}
+            title="Remover"
+            className="flex-1 flex items-center justify-center py-0.5 rounded
+                       text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20
+                       transition-colors"
+          >
+            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      {showTooltip && ReactDOM.createPortal(
+        <div
+          ref={tooltipRef}
+          style={{
+            position: 'fixed',
+            top: tooltipPos.top,
+            left: tooltipPos.left,
+            transform: tooltipPos.placement === 'above' ? 'translateY(-100%)' : 'none',
+            zIndex: 9999,
+          }}
+          className="bg-gray-900 border border-achtung-green/40 rounded-lg p-3 shadow-2xl w-64 text-[11px]"
+        >
+          <div className="text-achtung-green-light font-bold text-xs mb-2">👤 {contact.nome}</div>
+          {contact.tipo && (
+            <div className="mb-1.5">
+              <span className="font-semibold text-gray-400">Tipo: </span>
+              <span className="text-gray-200">{contact.tipo}</span>
+            </div>
+          )}
+          {contact.descricao && (
+            <div>
+              <span className="font-semibold text-gray-400">Descrição: </span>
+              <span className="text-gray-200 leading-relaxed">{contact.descricao}</span>
+            </div>
+          )}
+          {!contact.tipo && !contact.descricao && (
+            <span className="text-gray-500 italic">Sem detalhes.</span>
+          )}
+        </div>,
+        document.body
+      )}
+    </>
+  )
+}
+
+/* ── Contact Modal ── */
+function ContactModal({ initial, onSave, onClose }) {
+  const [form, setForm] = useState(initial || { nome: '', tipo: '', descricao: '' })
+
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    if (!form.nome.trim()) return
+    onSave(form)
+  }
+
+  return ReactDOM.createPortal(
+    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/50 px-4">
+      <div className="bg-white dark:bg-gray-900 rounded-xl shadow-2xl p-5 w-full max-w-sm
+                      border border-achtung-green/30">
+        <h3 className="text-sm font-bold text-achtung-green-dark dark:text-achtung-green-light mb-4">
+          {initial ? 'Editar Contato' : 'Novo Contato'}
+        </h3>
+        <form onSubmit={handleSubmit} className="space-y-3">
+          <div>
+            <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Nome *</label>
+            <input
+              type="text"
+              value={form.nome}
+              onChange={e => setForm(f => ({ ...f, nome: e.target.value }))}
+              className="sheet-input text-sm w-full"
+              placeholder="Nome do contato"
+              autoFocus
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Tipo</label>
+            <input
+              type="text"
+              value={form.tipo}
+              onChange={e => setForm(f => ({ ...f, tipo: e.target.value }))}
+              className="sheet-input text-sm w-full"
+              placeholder="Ex: Aliado, Informante, Rival..."
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Descrição</label>
+            <textarea
+              value={form.descricao}
+              onChange={e => setForm(f => ({ ...f, descricao: e.target.value }))}
+              className="sheet-input text-sm w-full resize-none"
+              rows={3}
+              placeholder="Detalhes sobre este contato..."
+            />
+          </div>
+          <div className="flex gap-2 justify-end pt-1">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-3 py-1.5 text-xs rounded-lg border border-gray-300 dark:border-gray-600
+                         text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800
+                         transition-colors"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              className="px-3 py-1.5 text-xs rounded-lg bg-achtung-green-dark text-white
+                         hover:bg-achtung-green transition-colors font-semibold"
+            >
+              Salvar
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>,
+    document.body
+  )
+}
+
 /* ── Main Component ── */
 export default function SheetPage2({ character, updateCharacter, isMaster = false }) {
   const [showWeaponForm, setShowWeaponForm] = useState(false)
@@ -734,6 +937,8 @@ export default function SheetPage2({ character, updateCharacter, isMaster = fals
   const [expandedTalents, setExpandedTalents] = useState(new Set())
   const [showTalentCatalog, setShowTalentCatalog] = useState(false)
   const [showWeaponCatalog, setShowWeaponCatalog] = useState(false)
+  const [showContactModal, setShowContactModal] = useState(false)
+  const [editingContactIdx, setEditingContactIdx] = useState(null)
   const { activeCharacterName } = useSelection()
   const { settings } = useMasterSettings()
 
@@ -745,19 +950,20 @@ export default function SheetPage2({ character, updateCharacter, isMaster = fals
     })
   }
 
-  const addContact = () => {
-    updateCharacter(prev => ({
-      ...prev,
-      contacts: [...(prev.contacts || []), ''],
-    }))
-  }
+  const openAddContact = () => { setEditingContactIdx(null); setShowContactModal(true) }
+  const openEditContact = (i) => { setEditingContactIdx(i); setShowContactModal(true) }
 
-  const updateContact = (index, value) => {
-    updateCharacter(prev => {
-      const contacts = [...(prev.contacts || [])]
-      contacts[index] = value
-      return { ...prev, contacts }
-    })
+  const saveContact = (data) => {
+    if (editingContactIdx !== null) {
+      updateCharacter(prev => {
+        const contacts = [...(prev.contacts || [])]
+        contacts[editingContactIdx] = data
+        return { ...prev, contacts }
+      })
+    } else {
+      updateCharacter(prev => ({ ...prev, contacts: [...(prev.contacts || []), data] }))
+    }
+    setShowContactModal(false)
   }
 
   const removeContact = (index) => {
@@ -765,6 +971,19 @@ export default function SheetPage2({ character, updateCharacter, isMaster = fals
       ...prev,
       contacts: (prev.contacts || []).filter((_, i) => i !== index),
     }))
+  }
+
+  const sendContactToChat = async (contact) => {
+    await storage.saveMessage({
+      id: Date.now().toString(),
+      sender: activeCharacterName || 'Sistema',
+      type: 'item_ref',
+      content: contact.nome,
+      itemRef: { type: 'contact', name: contact.nome, keyword: contact.tipo || '', effect: contact.descricao || '' },
+      rollData: null,
+      systemRollData: null,
+      timestamp: new Date().toISOString(),
+    })
   }
 
   /* ── Talent methods ── */
@@ -1032,7 +1251,7 @@ export default function SheetPage2({ character, updateCharacter, isMaster = fals
           <SectionHeader>Contatos</SectionHeader>
           <button
             type="button"
-            onClick={addContact}
+            onClick={openAddContact}
             className="w-7 h-7 flex items-center justify-center rounded-full
                        bg-achtung-green/20 hover:bg-achtung-green/40
                        text-achtung-green-dark dark:text-achtung-green-light
@@ -1044,33 +1263,22 @@ export default function SheetPage2({ character, updateCharacter, isMaster = fals
             </svg>
           </button>
         </div>
-        {(character.contacts || []).length === 0 ? (
+        {(character.contacts || []).filter(c => c && typeof c === 'object').length === 0 ? (
           <p className="mt-2 text-sm text-gray-400 dark:text-gray-600">Nenhum contato adicionado.</p>
         ) : (
-          <div className="mt-2 space-y-2">
-            {(character.contacts || []).map((contact, i) => (
-              <div key={i} className="flex items-center gap-2">
-                <input
-                  type="text"
-                  value={contact}
-                  onChange={e => updateContact(i, e.target.value)}
-                  className="sheet-input text-sm flex-1"
-                  placeholder={`Contato ${i + 1}`}
+          <div className="mt-2 grid grid-cols-2 sm:grid-cols-4 gap-2">
+            {(character.contacts || []).map((contact, i) => {
+              if (!contact || typeof contact !== 'object') return null
+              return (
+                <ContactTag
+                  key={i}
+                  contact={contact}
+                  onEdit={() => openEditContact(i)}
+                  onDelete={() => removeContact(i)}
+                  onSendToChat={() => sendContactToChat(contact)}
                 />
-                <button
-                  type="button"
-                  onClick={() => removeContact(i)}
-                  className="w-7 h-7 flex items-center justify-center rounded
-                             text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20
-                             transition-colors shrink-0"
-                  title="Remover contato"
-                >
-                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-            ))}
+              )
+            })}
           </div>
         )}
       </div>
@@ -1144,6 +1352,14 @@ export default function SheetPage2({ character, updateCharacter, isMaster = fals
           onClose={() => setDetailWeaponIdx(null)}
           onDelete={() => deleteWeapon(detailWeaponIdx)}
           onRollDamage={() => rollWeaponStress(allWeapons[detailWeaponIdx])}
+        />
+      )}
+
+      {showContactModal && (
+        <ContactModal
+          initial={editingContactIdx !== null ? (character.contacts || [])[editingContactIdx] : null}
+          onSave={saveContact}
+          onClose={() => setShowContactModal(false)}
         />
       )}
     </div>
