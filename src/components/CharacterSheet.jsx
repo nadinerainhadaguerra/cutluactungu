@@ -123,13 +123,24 @@ const TABS = [
 
 const PORTRAIT_W = 160
 const PORTRAIT_H = 200
-const PORTRAIT_OVAL = { cx: 80, cy: 117, rx: 69, ry: 55 }
-const CLIP = `ellipse(${PORTRAIT_OVAL.rx}px ${PORTRAIT_OVAL.ry}px at ${PORTRAIT_OVAL.cx}px ${PORTRAIT_OVAL.cy}px)`
 
-function PortraitFrame({ url, scale, offsetX, offsetY, naturalWidth, naturalHeight, onChange }) {
+const FRAME_CONFIGS = {
+  cutuloframe: { cx: 80, cy: 117, rx: 69, ry: 55 },
+  defaultimg:  { cx: 80, cy: 118, rx: 65, ry: 76 },
+}
+const getOval    = (frame) => FRAME_CONFIGS[frame] || FRAME_CONFIGS.cutuloframe
+const makeClip   = (oval)  => `ellipse(${oval.rx}px ${oval.ry}px at ${oval.cx}px ${oval.cy}px)`
+
+const FRAMES = [
+  { key: 'cutuloframe', label: 'Cthulhu' },
+  { key: 'defaultimg',  label: 'Padrão'  },
+]
+
+function PortraitFrame({ url, scale, offsetX, offsetY, naturalWidth, naturalHeight, frame, onChange }) {
   const [showUrlInput, setShowUrlInput] = useState(false)
   const [showEditor, setShowEditor] = useState(false)
   const [draftUrl, setDraftUrl] = useState('')
+  const [draftFrame, setDraftFrame] = useState(frame || 'cutuloframe')
   const [draft, setDraft] = useState({ scale: 1, offsetX: 0, offsetY: 0, nw: 0, nh: 0 })
   const urlInputRef = useRef(null)
 
@@ -139,6 +150,7 @@ function PortraitFrame({ url, scale, offsetX, offsetY, naturalWidth, naturalHeig
 
   const openClick = () => {
     setDraftUrl(url || '')
+    setDraftFrame(frame || 'cutuloframe')
     if (url) {
       setDraft({ scale: scale || 1, offsetX: offsetX || 0, offsetY: offsetY || 0, nw: naturalWidth || 0, nh: naturalHeight || 0 })
       setShowEditor(true)
@@ -188,19 +200,20 @@ function PortraitFrame({ url, scale, offsetX, offsetY, naturalWidth, naturalHeig
       portraitOffsetY: draft.offsetY,
       portraitNaturalWidth: draft.nw,
       portraitNaturalHeight: draft.nh,
+      portraitFrame: draftFrame,
     })
     setShowEditor(false)
   }
 
-  const portraitStyle = (s, ox, oy, nw, nh) => {
+  const portraitStyle = (oval, s, ox, oy, nw, nh) => {
     if (nw && nh) {
-      const bs = Math.max((PORTRAIT_OVAL.rx * 2) / nw, (PORTRAIT_OVAL.ry * 2) / nh)
+      const bs = Math.max((oval.rx * 2) / nw, (oval.ry * 2) / nh)
       const W = nw * bs * (s || 1)
       const H = nh * bs * (s || 1)
       return {
         position: 'absolute',
-        left: PORTRAIT_OVAL.cx - W / 2 + (ox || 0),
-        top: PORTRAIT_OVAL.cy - H / 2 + (oy || 0),
+        left: oval.cx - W / 2 + (ox || 0),
+        top: oval.cy - H / 2 + (oy || 0),
         width: W,
         height: 'auto',
         maxWidth: 'none',
@@ -210,7 +223,7 @@ function PortraitFrame({ url, scale, offsetX, offsetY, naturalWidth, naturalHeig
     return {
       position: 'absolute', inset: 0, width: '100%', height: '100%',
       objectFit: 'cover',
-      transformOrigin: `${PORTRAIT_OVAL.cx}px ${PORTRAIT_OVAL.cy}px`,
+      transformOrigin: `${oval.cx}px ${oval.cy}px`,
       transform: `translate(${ox || 0}px, ${oy || 0}px) scale(${s || 1})`,
       userSelect: 'none',
     }
@@ -220,21 +233,21 @@ function PortraitFrame({ url, scale, offsetX, offsetY, naturalWidth, naturalHeig
     <div className="relative shrink-0" style={{ width: PORTRAIT_W, height: PORTRAIT_H }}>
       {url ? (
         <>
-          {/* Portrait clipped to oval */}
-          <div style={{ position: 'absolute', inset: 0, clipPath: CLIP, overflow: 'hidden', zIndex: 0 }}>
+          {/* Portrait clipped to oval — oval varies per frame */}
+          <div style={{ position: 'absolute', inset: 0, clipPath: makeClip(getOval(frame)), overflow: 'hidden', zIndex: 0 }}>
             <img src={url} alt="Retrato" draggable={false}
-              style={portraitStyle(scale, offsetX, offsetY, naturalWidth, naturalHeight)}
+              style={portraitStyle(getOval(frame), scale, offsetX, offsetY, naturalWidth, naturalHeight)}
               onError={e => { e.target.style.display = 'none' }}
             />
           </div>
-          {/* Frame overlay */}
-          <img src="/cutuloframe.png" alt="" draggable={false}
+          {/* Frame overlay — uses saved frame choice */}
+          <img src={`/${frame || 'cutuloframe'}.png`} alt="" draggable={false}
             style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', zIndex: 1, pointerEvents: 'none' }}
           />
         </>
       ) : (
-        /* Default image — no frame */
-        <img src="/defaultimg.png" alt="Retrato padrão" draggable={false}
+        /* Default placeholder — click to set portrait */
+        <img src="/whochar.png" alt="Retrato padrão" draggable={false}
           style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 0 }}
         />
       )}
@@ -275,6 +288,27 @@ function PortraitFrame({ url, scale, offsetX, offsetY, naturalWidth, naturalHeig
                          bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100
                          focus:outline-none focus:ring-2 focus:ring-achtung-green/50 mb-4"
             />
+
+            {/* Frame selector */}
+            <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">Moldura</p>
+            <div className="flex gap-3 mb-4">
+              {FRAMES.map(({ key, label }) => (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => setDraftFrame(key)}
+                  className={`flex flex-col items-center gap-1 p-1.5 rounded-lg border-2 transition-colors
+                              ${draftFrame === key
+                                ? 'border-achtung-green-dark dark:border-achtung-green-light'
+                                : 'border-gray-200 dark:border-gray-700 hover:border-achtung-green/50'}`}
+                >
+                  <img src={`/${key}.png`} alt={label}
+                       className="w-14 h-[72px] object-cover rounded" draggable={false} />
+                  <span className="text-[10px] text-gray-600 dark:text-gray-300">{label}</span>
+                </button>
+              ))}
+            </div>
+
             <div className="flex justify-end gap-2">
               <button type="button" onClick={() => setShowUrlInput(false)}
                 className="px-3 py-1.5 text-sm rounded-lg text-gray-500 hover:bg-gray-100
@@ -320,6 +354,28 @@ function PortraitFrame({ url, scale, offsetX, offsetY, naturalWidth, naturalHeig
                 <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
                   Arraste a imagem para reposicionar
                 </p>
+
+                {/* Frame selector inside editor */}
+                <div className="mt-3">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">Moldura</p>
+                  <div className="flex gap-2">
+                    {FRAMES.map(({ key, label }) => (
+                      <button
+                        key={key}
+                        type="button"
+                        onClick={() => setDraftFrame(key)}
+                        className={`flex flex-col items-center gap-1 p-1 rounded-lg border-2 transition-colors
+                                    ${draftFrame === key
+                                      ? 'border-achtung-green-dark dark:border-achtung-green-light'
+                                      : 'border-gray-200 dark:border-gray-700 hover:border-achtung-green/50'}`}
+                      >
+                        <img src={`/${key}.png`} alt={label}
+                             className="w-10 h-[52px] object-cover rounded" draggable={false} />
+                        <span className="text-[9px] text-gray-600 dark:text-gray-300">{label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
 
               <div className="flex flex-col gap-2 mt-4">
@@ -344,32 +400,37 @@ function PortraitFrame({ url, scale, offsetX, offsetY, naturalWidth, naturalHeig
             {/* Right column: image preview (2× scaled) */}
             <div style={{ width: PORTRAIT_W * 2, height: PORTRAIT_H * 2, position: 'relative', flexShrink: 0, overflow: 'hidden' }}>
               <div style={{ width: PORTRAIT_W, height: PORTRAIT_H, transform: 'scale(2)', transformOrigin: '0 0' }}>
-                <img
-                  src={draftUrl}
-                  alt="Preview"
-                  draggable={false}
-                  style={{
-                    ...portraitStyle(draft.scale, draft.offsetX, draft.offsetY, draft.nw, draft.nh),
-                    cursor: 'grab',
-                    zIndex: 0,
-                  }}
-                  onLoad={handleImgLoad}
-                  onMouseDown={handleDragStart}
-                />
-                <svg
-                  style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 1 }}
-                  viewBox={`0 0 ${PORTRAIT_W} ${PORTRAIT_H}`}
-                  preserveAspectRatio="none"
-                >
-                  <defs>
-                    <mask id="editor-oval-mask">
-                      <rect width={PORTRAIT_W} height={PORTRAIT_H} fill="white" />
-                      <ellipse cx={PORTRAIT_OVAL.cx} cy={PORTRAIT_OVAL.cy} rx={PORTRAIT_OVAL.rx} ry={PORTRAIT_OVAL.ry} fill="black" />
-                    </mask>
-                  </defs>
-                  <rect width={PORTRAIT_W} height={PORTRAIT_H} fill="rgba(0,0,0,0.5)" mask="url(#editor-oval-mask)" />
-                </svg>
-                <img src="/cutuloframe.png" alt="" draggable={false}
+                {(() => {
+                  const editorOval = getOval(draftFrame)
+                  return (<>
+                    <img
+                      src={draftUrl}
+                      alt="Preview"
+                      draggable={false}
+                      style={{
+                        ...portraitStyle(editorOval, draft.scale, draft.offsetX, draft.offsetY, draft.nw, draft.nh),
+                        cursor: 'grab',
+                        zIndex: 0,
+                      }}
+                      onLoad={handleImgLoad}
+                      onMouseDown={handleDragStart}
+                    />
+                    <svg
+                      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 1 }}
+                      viewBox={`0 0 ${PORTRAIT_W} ${PORTRAIT_H}`}
+                      preserveAspectRatio="none"
+                    >
+                      <defs>
+                        <mask id="editor-oval-mask">
+                          <rect width={PORTRAIT_W} height={PORTRAIT_H} fill="white" />
+                          <ellipse cx={editorOval.cx} cy={editorOval.cy} rx={editorOval.rx} ry={editorOval.ry} fill="black" />
+                        </mask>
+                      </defs>
+                      <rect width={PORTRAIT_W} height={PORTRAIT_H} fill="rgba(0,0,0,0.5)" mask="url(#editor-oval-mask)" />
+                    </svg>
+                  </>)
+                })()}
+                <img src={`/${draftFrame}.png`} alt="" draggable={false}
                   style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 2 }}
                 />
               </div>
@@ -580,6 +641,7 @@ export default function CharacterSheet({ characterName, isMaster = false, isNpc 
           offsetY={character.portraitOffsetY || 0}
           naturalWidth={character.portraitNaturalWidth || 0}
           naturalHeight={character.portraitNaturalHeight || 0}
+          frame={character.portraitFrame || 'cutuloframe'}
           onChange={data => updateCharacter(prev => ({ ...prev, ...data }))}
         />
       </div>

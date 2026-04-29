@@ -119,6 +119,7 @@ export function createCharacterTemplate(name, password) {
     portraitOffsetY: 0,
     portraitNaturalWidth: 0,
     portraitNaturalHeight: 0,
+    portraitFrame: 'cutuloframe',
     setupComplete: false,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
