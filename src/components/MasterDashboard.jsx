@@ -356,6 +356,174 @@ function NpcEditPopup({ currentName, onSave, onClose }) {
   )
 }
 
+function CampaignSettingsPopup({ activeMaster, onClose }) {
+  const [orgs, setOrgs] = useState([])
+  const [showAddOrg, setShowAddOrg] = useState(false)
+  const [newOrgName, setNewOrgName] = useState('')
+  const [addingAffOrg, setAddingAffOrg] = useState(null)
+  const [newAffName, setNewAffName] = useState('')
+
+  useEffect(() => {
+    if (!activeMaster) return
+    const unsub = storage.onCampaignSettingsChangedForMaster(activeMaster, data => {
+      setOrgs(data.organizations || [])
+    })
+    return () => unsub()
+  }, [activeMaster])
+
+  const save = (newOrgs) => {
+    storage.saveCampaignSettingsForMaster(activeMaster, { organizations: newOrgs })
+  }
+
+  const toggleOrg = (orgName) => {
+    save(orgs.map(o => o.name === orgName ? { ...o, active: !o.active } : o))
+  }
+
+  const addOrg = () => {
+    const trimmed = newOrgName.trim()
+    if (!trimmed) return
+    save([...orgs, { name: trimmed, active: false, affiliations: [] }])
+    setNewOrgName('')
+    setShowAddOrg(false)
+  }
+
+  const addAffiliation = () => {
+    const trimmed = newAffName.trim()
+    if (!trimmed || !addingAffOrg) return
+    save(orgs.map(o => o.name === addingAffOrg
+      ? { ...o, affiliations: [...o.affiliations, trimmed] }
+      : o
+    ))
+    setNewAffName('')
+    setAddingAffOrg(null)
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
+         onClick={onClose}>
+      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-lg max-h-[80vh]
+                      flex flex-col border-2 border-purple-500/30"
+           onClick={e => e.stopPropagation()}>
+        <div className="flex items-center justify-between px-5 py-4 border-b border-purple-500/20
+                        bg-purple-700 text-white rounded-t-2xl shrink-0">
+          <div className="flex items-center gap-2">
+            <span className="text-xl">⚔</span>
+            <span className="font-gothic text-xl">Configuração da Campanha</span>
+          </div>
+          <button onClick={onClose} className="p-1 hover:bg-white/20 rounded transition-colors">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <div className="overflow-y-auto flex-1 p-4 space-y-3">
+          {orgs.map(org => (
+            <div key={org.name} className="border border-purple-200 dark:border-purple-800/50 rounded-xl p-3">
+              <div className="flex items-center justify-between mb-1">
+                <span className="font-semibold text-sm text-gray-800 dark:text-gray-200">
+                  Filiações {org.name}
+                </span>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => {
+                      if (addingAffOrg === org.name) { setAddingAffOrg(null); setNewAffName('') }
+                      else { setAddingAffOrg(org.name); setNewAffName('') }
+                    }}
+                    className="text-xs px-2 py-1 rounded-lg bg-purple-100 dark:bg-purple-900/30
+                               text-purple-700 dark:text-purple-300 hover:bg-purple-200
+                               dark:hover:bg-purple-900/50 transition-colors"
+                  >
+                    + Filiação
+                  </button>
+                  <button
+                    onClick={() => toggleOrg(org.name)}
+                    title={org.active ? 'Ativo — clique para desativar' : 'Inativo — clique para ativar'}
+                    className={`relative shrink-0 w-10 h-6 rounded-full transition-colors duration-200
+                      ${org.active ? 'bg-purple-600' : 'bg-gray-300 dark:bg-gray-600'}`}
+                  >
+                    <span className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-transform duration-200
+                      ${org.active ? 'left-5' : 'left-1'}`} />
+                  </button>
+                </div>
+              </div>
+
+              {org.affiliations.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mt-2">
+                  {org.affiliations.map(aff => (
+                    <span key={aff}
+                      className="text-xs px-2 py-0.5 rounded-full border border-purple-200 dark:border-purple-800
+                                 bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300">
+                      {aff}
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              {addingAffOrg === org.name && (
+                <div className="flex gap-2 mt-2">
+                  <input
+                    type="text"
+                    value={newAffName}
+                    onChange={e => setNewAffName(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && addAffiliation()}
+                    placeholder="Nome da filiação"
+                    autoFocus
+                    className="flex-1 px-2 py-1.5 text-sm rounded-lg border border-purple-300 dark:border-purple-700
+                               bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100
+                               outline-none focus:border-purple-500"
+                  />
+                  <button
+                    onClick={addAffiliation}
+                    disabled={!newAffName.trim()}
+                    className="px-3 py-1.5 text-sm font-semibold bg-purple-600 hover:bg-purple-700
+                               text-white rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    OK
+                  </button>
+                </div>
+              )}
+            </div>
+          ))}
+
+          {showAddOrg ? (
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={newOrgName}
+                onChange={e => setNewOrgName(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && addOrg()}
+                placeholder="Nome da organização"
+                autoFocus
+                className="flex-1 px-3 py-2 text-sm rounded-lg border border-purple-300 dark:border-purple-700
+                           bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100
+                           outline-none focus:border-purple-500"
+              />
+              <button
+                onClick={addOrg}
+                disabled={!newOrgName.trim()}
+                className="px-3 py-2 text-sm font-semibold bg-purple-600 hover:bg-purple-700
+                           text-white rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                Criar
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => setShowAddOrg(true)}
+              className="w-full py-2.5 rounded-xl border-2 border-dashed border-purple-300 dark:border-purple-700/50
+                         text-purple-600 dark:text-purple-400 text-sm font-semibold
+                         hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-colors"
+            >
+              + Adicionar Organização
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function MasterSettingsPopup({ onClose }) {
   const { settings, updateSetting } = useMasterSettings()
 
@@ -424,18 +592,19 @@ function MasterSettingsPopup({ onClose }) {
   )
 }
 
-function CounterBar() {
+function CounterBar({ masterName }) {
   const [momentum, setMomentum] = useState(0)
   const [complications, setComplications] = useState(0)
 
   useEffect(() => {
-    const unsubMomentum = storage.onMomentumChanged(setMomentum)
-    const unsubComplications = storage.onComplicationsChanged(setComplications)
+    if (!masterName) return
+    const unsubMomentum = storage.onMomentumChangedForMaster(masterName, setMomentum)
+    const unsubComplications = storage.onComplicationsChangedForMaster(masterName, setComplications)
     return () => { unsubMomentum(); unsubComplications() }
-  }, [])
+  }, [masterName])
 
-  const changeMomentum = (delta) => storage.setMomentum(momentum + delta)
-  const changeComplications = (delta) => storage.setComplications(complications + delta)
+  const changeMomentum = (delta) => storage.setMomentumForMaster(masterName, momentum + delta)
+  const changeComplications = (delta) => storage.setComplicationsForMaster(masterName, complications + delta)
 
   return (
     <div className="card px-5 py-3 mb-6 flex items-center gap-6 flex-wrap w-fit mx-auto">
@@ -504,9 +673,9 @@ function CounterBar() {
   )
 }
 
-export default function MasterDashboard() {
-  const [characters, setCharacters] = useState([])
-  const [npcs, setNpcs] = useState([])
+export default function MasterDashboard({ activeMaster }) {
+  const [allCharacters, setAllCharacters] = useState([])
+  const [allNpcs, setAllNpcs] = useState([])
   const [selectedCharacter, setSelectedCharacter] = useState(null)
   const [selectedNpc, setSelectedNpc] = useState(null)
   const [showNpcPopup, setShowNpcPopup] = useState(false)
@@ -514,27 +683,51 @@ export default function MasterDashboard() {
   const [deletingChar, setDeletingChar] = useState(null)
   const [deletingNpc, setDeletingNpc] = useState(null)
   const [showSettings, setShowSettings] = useState(false)
+  const [showCampaignSettings, setShowCampaignSettings] = useState(false)
   const { setSubHeader } = useSubHeader()
 
+  const characters = allCharacters.filter(c => c.mestre === activeMaster)
+  const npcs = allNpcs.filter(n => n.mestre === activeMaster)
+
   useEffect(() => {
-    const unsubChars = storage.onCharactersChanged(setCharacters)
-    const unsubNpcs = storage.onNpcsChanged(setNpcs)
+    const unsubChars = storage.onCharactersChanged(setAllCharacters)
+    const unsubNpcs = storage.onNpcsChanged(setAllNpcs)
     return () => { unsubChars(); unsubNpcs() }
   }, [])
 
+  // Reset selected sheet when master changes
+  useEffect(() => {
+    setSelectedCharacter(null)
+    setSelectedNpc(null)
+  }, [activeMaster])
+
   useEffect(() => {
     if (selectedCharacter) {
-      setSubHeader({ label: 'Voltar para lista', onBack: () => setSelectedCharacter(null) })
+      const char = allCharacters.find(c => c.name === selectedCharacter)
+      setSubHeader({
+        label: 'Voltar para lista',
+        onBack: () => setSelectedCharacter(null),
+        characterName: selectedCharacter,
+        characterMestre: char?.mestre || activeMaster,
+        isNpc: false,
+      })
     } else if (selectedNpc) {
-      setSubHeader({ label: 'Voltar para lista', onBack: () => setSelectedNpc(null) })
+      const npc = allNpcs.find(n => n.name === selectedNpc)
+      setSubHeader({
+        label: 'Voltar para lista',
+        onBack: () => setSelectedNpc(null),
+        characterName: selectedNpc,
+        characterMestre: npc?.mestre || activeMaster,
+        isNpc: true,
+      })
     } else {
       setSubHeader(null)
     }
     return () => setSubHeader(null)
-  }, [selectedCharacter, selectedNpc, setSubHeader])
+  }, [selectedCharacter, selectedNpc, allCharacters, allNpcs, activeMaster, setSubHeader])
 
   const createNpc = async (name) => {
-    await storage.createNpc(name)
+    await storage.createNpc(name, activeMaster)
     setShowNpcPopup(false)
   }
 
@@ -572,7 +765,7 @@ export default function MasterDashboard() {
       <div className="mb-6 flex items-start justify-between gap-4">
         <div>
           <h2 className="font-gothic text-3xl text-achtung-green-dark dark:text-achtung-green-light mb-2">
-            Painel do Mestre
+            {activeMaster}
           </h2>
           <p className="text-sm text-gray-600 dark:text-gray-400">
             {characters.length} ficha{characters.length !== 1 ? 's' : ''} de jogador{characters.length !== 1 ? 'es' : ''}
@@ -580,6 +773,16 @@ export default function MasterDashboard() {
             {npcs.length} NPC{npcs.length !== 1 ? 's' : ''}
           </p>
         </div>
+        <div className="flex gap-2">
+        <button
+          onClick={() => setShowCampaignSettings(true)}
+          className="shrink-0 w-10 h-10 flex items-center justify-center rounded-xl
+                     bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/20
+                     text-purple-700 dark:text-purple-400 transition-colors text-base"
+          title="Configuração da campanha"
+        >
+          ⚔
+        </button>
         <button
           onClick={() => setShowSettings(true)}
           className="shrink-0 w-10 h-10 flex items-center justify-center rounded-xl
@@ -593,9 +796,10 @@ export default function MasterDashboard() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
           </svg>
         </button>
+        </div>
       </div>
 
-      <CounterBar />
+      <CounterBar masterName={activeMaster} />
 
       {/* Fichas de Jogadores */}
       <div className="mb-8">
@@ -708,6 +912,13 @@ export default function MasterDashboard() {
 
       {showSettings && (
         <MasterSettingsPopup onClose={() => setShowSettings(false)} />
+      )}
+
+      {showCampaignSettings && (
+        <CampaignSettingsPopup
+          activeMaster={activeMaster}
+          onClose={() => setShowCampaignSettings(false)}
+        />
       )}
 
     </div>

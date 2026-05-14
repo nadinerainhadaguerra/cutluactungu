@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { useTheme } from '../contexts/ThemeContext'
+import { useMasterProfile } from '../contexts/MasterProfileContext'
 import { storage } from '../services/storage'
 import { EncyclopediaButton } from './EncyclopediaPopup'
 
@@ -121,6 +122,7 @@ const IS_DEV = import.meta.env.DEV
 
 export default function LoginScreen() {
   const { loginAsMaster, loginAsPlayer, loginAsNewPlayer } = useAuth()
+  const { masters } = useMasterProfile()
 
   const [masterPassword, setMasterPassword] = useState('')
   const [masterError, setMasterError] = useState('')
@@ -132,6 +134,7 @@ export default function LoginScreen() {
 
   const [newPlayerName, setNewPlayerName] = useState('')
   const [newPlayerPassword, setNewPlayerPassword] = useState('')
+  const [newPlayerMestre, setNewPlayerMestre] = useState('')
   const [newPlayerError, setNewPlayerError] = useState('')
 
   const [characterNames, setCharacterNames] = useState([])
@@ -170,8 +173,12 @@ export default function LoginScreen() {
   const handleNewPlayer = async (e) => {
     e.preventDefault()
     setNewPlayerError('')
+    if (!newPlayerMestre) {
+      setNewPlayerError('Selecione um Mestre para esta ficha.')
+      return
+    }
     setLoading(true)
-    const result = await loginAsNewPlayer(newPlayerName, newPlayerPassword)
+    const result = await loginAsNewPlayer(newPlayerName, newPlayerPassword, newPlayerMestre)
     setLoading(false)
     if (!result.success) setNewPlayerError(result.error)
   }
@@ -264,6 +271,19 @@ export default function LoginScreen() {
                          text-gray-900 dark:text-gray-100 focus:border-achtung-green
                          dark:focus:border-achtung-green-light outline-none transition-colors"
             />
+            <select
+              value={newPlayerMestre}
+              onChange={e => setNewPlayerMestre(e.target.value)}
+              className="w-full px-4 py-2.5 rounded-lg border-2 border-achtung-green-muted/50
+                         dark:border-achtung-green/30 bg-white dark:bg-gray-800
+                         text-gray-900 dark:text-gray-100 focus:border-achtung-green
+                         dark:focus:border-achtung-green-light outline-none transition-colors"
+            >
+              <option value="">Selecionar Mestre...</option>
+              {masters.map(m => (
+                <option key={m} value={m}>{m}</option>
+              ))}
+            </select>
             {!IS_DEV && (
               <input
                 type="password"

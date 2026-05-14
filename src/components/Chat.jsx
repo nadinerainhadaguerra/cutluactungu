@@ -429,7 +429,7 @@ function ItemRefMessage({ data }) {
   )
 }
 
-function DiceRollPopup({ characterName, onClose, onRollComplete }) {
+function DiceRollPopup({ characterName, mestre, onClose, onRollComplete }) {
   const { selectedAttribute, selectedSkill } = useSelection()
   const [purchasedDice, setPurchasedDice] = useState(0)
   const [selectedTruths, setSelectedTruths] = useState([])
@@ -441,9 +441,10 @@ function DiceRollPopup({ characterName, onClose, onRollComplete }) {
   const [useFortune, setUseFortune] = useState(false)
 
   useEffect(() => {
-    const unsub = storage.onMomentumChanged(setMomentum)
+    if (!mestre) return
+    const unsub = storage.onMomentumChangedForMaster(mestre, setMomentum)
     return () => unsub()
-  }, [])
+  }, [mestre])
 
   useEffect(() => {
     if (characterName) {
@@ -490,9 +491,9 @@ function DiceRollPopup({ characterName, onClose, onRollComplete }) {
       return
     }
 
-    if (purchasedDice > 0) {
+    if (purchasedDice > 0 && mestre) {
       const newMomentum = momentum - momentumCost
-      storage.setMomentum(newMomentum)
+      storage.setMomentumForMaster(mestre, newMomentum)
     }
 
     if (useFortune) {
@@ -746,7 +747,7 @@ function DiceRollPopup({ characterName, onClose, onRollComplete }) {
   )
 }
 
-export default function Chat({ senderName, onClose, isVisible = false }) {
+export default function Chat({ senderName, mestre, onClose, isVisible = false }) {
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState('')
   const [showDicePopup, setShowDicePopup] = useState(false)
@@ -1024,8 +1025,8 @@ export default function Chat({ senderName, onClose, isVisible = false }) {
       timestamp: new Date().toISOString(),
     }
     await storage.saveMessage(message)
-    if (rollData.totalComplications > 0) {
-      await storage.addComplications(rollData.totalComplications)
+    if (rollData.totalComplications > 0 && mestre) {
+      await storage.addComplicationsForMaster(mestre, rollData.totalComplications)
     }
   }
 
@@ -1066,8 +1067,8 @@ export default function Chat({ senderName, onClose, isVisible = false }) {
       timestamp: new Date().toISOString(),
     }
     await storage.saveMessage(message)
-    if (totalComplications > 0) {
-      await storage.addComplications(totalComplications)
+    if (totalComplications > 0 && mestre) {
+      await storage.addComplicationsForMaster(mestre, totalComplications)
     }
   }
 
@@ -1237,6 +1238,7 @@ export default function Chat({ senderName, onClose, isVisible = false }) {
       {showDicePopup && (
         <DiceRollPopup
           characterName={activeCharacterName}
+          mestre={mestre}
           onClose={() => setShowDicePopup(false)}
           onRollComplete={handleSystemRoll}
         />

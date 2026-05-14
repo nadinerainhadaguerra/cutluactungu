@@ -13,8 +13,11 @@ const MESSAGES_COL = 'messages'
 const CONFIG_DOC = doc(db, 'config', 'settings')
 const NOTES_COL = 'notes'
 const SCENARIOS_COL = 'scenarios'
+const MASTERS_COL = 'masters'
 const ACTIVE_SCENARIO_DOC = doc(db, 'config', 'activeScenario')
 const ACTIVE_TESTS_DOC = doc(db, 'config', 'activeTests')
+
+const masterConfigDoc = (masterName) => doc(db, 'config', `master_${masterName}`)
 
 export const storage = {
   // --- Config / Master Password ---
@@ -27,7 +30,92 @@ export const storage = {
     await setDoc(CONFIG_DOC, { masterPassword: password }, { merge: true })
   },
 
-  // --- Momentum ---
+  // --- Masters ---
+  async getMasters() {
+    const snap = await getDocs(collection(db, MASTERS_COL))
+    return snap.docs.map(d => d.data().name).filter(Boolean)
+  },
+
+  async createMaster(name) {
+    await setDoc(doc(db, MASTERS_COL, name), { name })
+  },
+
+  onMastersChanged(callback) {
+    return onSnapshot(collection(db, MASTERS_COL), snap => {
+      callback(snap.docs.map(d => d.data().name).filter(Boolean))
+    })
+  },
+
+  // --- Per-master Momentum ---
+  async getMomentumForMaster(masterName) {
+    const snap = await getDoc(masterConfigDoc(masterName))
+    return snap.exists() && typeof snap.data().momentum === 'number' ? snap.data().momentum : 0
+  },
+
+  async setMomentumForMaster(masterName, value) {
+    const clamped = Math.max(0, Math.min(6, value))
+    await setDoc(masterConfigDoc(masterName), { momentum: clamped }, { merge: true })
+  },
+
+  onMomentumChangedForMaster(masterName, callback) {
+    return onSnapshot(masterConfigDoc(masterName), snap => {
+      callback(snap.exists() && typeof snap.data().momentum === 'number' ? snap.data().momentum : 0)
+    })
+  },
+
+  // --- Per-master Complications ---
+  async setComplicationsForMaster(masterName, value) {
+    const clamped = Math.max(0, Math.min(6, value))
+    await setDoc(masterConfigDoc(masterName), { complications: clamped }, { merge: true })
+  },
+
+  async addComplicationsForMaster(masterName, amount) {
+    const snap = await getDoc(masterConfigDoc(masterName))
+    const current = snap.exists() && typeof snap.data().complications === 'number' ? snap.data().complications : 0
+    const clamped = Math.min(6, current + amount)
+    await setDoc(masterConfigDoc(masterName), { complications: clamped }, { merge: true })
+  },
+
+  onComplicationsChangedForMaster(masterName, callback) {
+    return onSnapshot(masterConfigDoc(masterName), snap => {
+      callback(snap.exists() && typeof snap.data().complications === 'number' ? snap.data().complications : 0)
+    })
+  },
+
+  // --- Per-master Settings ---
+  async saveMasterSettingsForMaster(masterName, settings) {
+    await setDoc(masterConfigDoc(masterName), { masterSettings: settings }, { merge: true })
+  },
+
+  onMasterSettingsChangedForMaster(masterName, callback) {
+    const DEFAULT = { poderDaMagia: false, resistenciaPorAtributo: false, dadoDeDanoPorAtributo: false }
+    return onSnapshot(masterConfigDoc(masterName), snap => {
+      if (snap.exists() && snap.data().masterSettings) {
+        callback({ ...DEFAULT, ...snap.data().masterSettings })
+      } else {
+        callback({ ...DEFAULT })
+      }
+    })
+  },
+
+  // --- Per-master Campaign Settings ---
+  async saveCampaignSettingsForMaster(masterName, campaignSettings) {
+    await setDoc(masterConfigDoc(masterName), { campaignSettings }, { merge: true })
+  },
+
+  onCampaignSettingsChangedForMaster(masterName, callback) {
+    const DEFAULT_ORGS = [
+      { name: 'Sessão M', active: false, affiliations: [] },
+      { name: 'Majestic', active: false, affiliations: [] },
+      { name: 'Divisão Folclore', active: false, affiliations: ['Monarcas', 'Totem', 'Encantados'] },
+    ]
+    return onSnapshot(masterConfigDoc(masterName), snap => {
+      const data = snap.exists() ? snap.data().campaignSettings : null
+      callback(data || { organizations: DEFAULT_ORGS })
+    })
+  },
+
+  // --- Legacy global Momentum (kept for compatibility) ---
   async getMomentum() {
     const snap = await getDoc(CONFIG_DOC)
     if (snap.exists() && typeof snap.data().momentum === 'number') {
@@ -58,10 +146,32 @@ export const storage = {
     return chars.some(c => c.name.toLowerCase() === name.toLowerCase())
   },
 
-  async createCharacter(name, password) {
+  async createCharacter(name, password, mestre = '') {
     const character = createCharacterTemplate(name, password)
+    character.mestre = mestre
     await setDoc(doc(db, CHARACTERS_COL, name), character)
     return character
+  },
+
+  async setCharacterMestre(name, mestre) {
+    await setDoc(doc(db, CHARACTERS_COL, name), { mestre }, { merge: true })
+  },
+
+  async setNpcMestre(name, mestre) {
+    await setDoc(doc(db, NPCS_COL, name), { mestre }, { merge: true })
+  },
+
+  async migrateToMaster(defaultMaster) {
+    const batch = writeBatch(db)
+    const [charSnap, npcSnap, scenSnap] = await Promise.all([
+      getDocs(collection(db, CHARACTERS_COL)),
+      getDocs(collection(db, NPCS_COL)),
+      getDocs(collection(db, SCENARIOS_COL)),
+    ])
+    charSnap.docs.forEach(d => { if (!d.data().mestre) batch.update(d.ref, { mestre: defaultMaster }) })
+    npcSnap.docs.forEach(d => { if (!d.data().mestre) batch.update(d.ref, { mestre: defaultMaster }) })
+    scenSnap.docs.forEach(d => { if (!d.data().mestre) batch.update(d.ref, { mestre: defaultMaster }) })
+    await batch.commit()
   },
 
   async saveCharacter(character) {
@@ -170,9 +280,10 @@ export const storage = {
   },
 
   // --- NPCs ---
-  async createNpc(name) {
+  async createNpc(name, mestre = '') {
     const character = createCharacterTemplate(name, '')
     character.isNpc = true
+    character.mestre = mestre
     await setDoc(doc(db, NPCS_COL, name), character)
     return character
   },
@@ -229,10 +340,11 @@ export const storage = {
   },
 
   // --- Scenarios ---
-  async createScenario(title, images) {
+  async createScenario(title, images, mestre = '') {
     await addDoc(collection(db, SCENARIOS_COL), {
       title,
       images,
+      mestre,
       createdAt: new Date().toISOString(),
     })
   },

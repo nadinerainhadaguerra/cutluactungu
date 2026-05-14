@@ -14,10 +14,13 @@ export default function PlayerTestPopup({ character, test }) {
     y: Math.max(0, Math.floor((window.innerHeight - 500) / 2)),
   })
 
+  const mestre = character?.mestre || ''
+
   useEffect(() => {
-    const unsub = storage.onMomentumChanged(setMomentum)
+    if (!mestre) return
+    const unsub = storage.onMomentumChangedForMaster(mestre, setMomentum)
     return () => unsub()
-  }, [])
+  }, [mestre])
 
   const attrData = ATTRIBUTES.find(a => a.id === test.attribute)
   const skillData = SKILLS_DATA.find(s => s.id === test.skill)
@@ -70,10 +73,10 @@ export default function PlayerTestPopup({ character, test }) {
     const excess = Math.max(0, totalSuccesses - test.requiredSuccesses)
     let newMomentum = momentum - momentumCost
     if (excess > 0) newMomentum = Math.min(6, newMomentum + excess)
-    await storage.setMomentum(newMomentum)
+    if (mestre) await storage.setMomentumForMaster(mestre, newMomentum)
 
-    if (totalComplications > 0) {
-      await storage.addComplications(totalComplications)
+    if (totalComplications > 0 && mestre) {
+      await storage.addComplicationsForMaster(mestre, totalComplications)
     }
 
     const rollData = {

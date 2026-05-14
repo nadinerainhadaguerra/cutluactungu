@@ -29,13 +29,13 @@ export function AuthProvider({ children }) {
     if (!character) {
       return { success: false, error: 'Personagem não encontrado.' }
     }
-    const session = { type: 'player', name: characterName }
+    const session = { type: 'player', name: characterName, mestre: character.mestre || '' }
     setUser(session)
     sessionStorage.setItem('achtung_session', JSON.stringify(session))
     return { success: true }
   }
 
-  const loginAsNewPlayer = async (characterName, password) => {
+  const loginAsNewPlayer = async (characterName, password, mestre = '') => {
     if (!characterName.trim()) {
       return { success: false, error: 'Digite um nome para o personagem.' }
     }
@@ -47,20 +47,30 @@ export function AuthProvider({ children }) {
     if (exists) {
       return { success: false, error: 'Já existe uma ficha com esse nome.' }
     }
-    await storage.createCharacter(characterName.trim(), '')
-    const session = { type: 'player', name: characterName.trim() }
+    await storage.createCharacter(characterName.trim(), '', mestre)
+    const session = { type: 'player', name: characterName.trim(), mestre }
     setUser(session)
     sessionStorage.setItem('achtung_session', JSON.stringify(session))
     return { success: true }
   }
 
+  const updateMestre = (mestre) => {
+    setUser(prev => {
+      if (!prev) return prev
+      const updated = { ...prev, mestre }
+      sessionStorage.setItem('achtung_session', JSON.stringify(updated))
+      return updated
+    })
+  }
+
   const logout = () => {
     setUser(null)
     sessionStorage.removeItem('achtung_session')
+    sessionStorage.removeItem('achtung_active_master')
   }
 
   return (
-    <AuthContext.Provider value={{ user, loginAsMaster, loginAsPlayer, loginAsNewPlayer, logout }}>
+    <AuthContext.Provider value={{ user, loginAsMaster, loginAsPlayer, loginAsNewPlayer, logout, updateMestre }}>
       {children}
     </AuthContext.Provider>
   )

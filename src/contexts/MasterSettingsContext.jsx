@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react'
 import { storage } from '../services/storage'
+import { useMasterProfile } from './MasterProfileContext'
 
 const DEFAULT_SETTINGS = {
   poderDaMagia: false,
@@ -11,16 +12,21 @@ const MasterSettingsContext = createContext()
 
 export function MasterSettingsProvider({ children }) {
   const [settings, setSettings] = useState(DEFAULT_SETTINGS)
+  const { activeMaster } = useMasterProfile()
 
   useEffect(() => {
-    const unsub = storage.onMasterSettingsChanged(setSettings)
+    if (!activeMaster) {
+      setSettings(DEFAULT_SETTINGS)
+      return
+    }
+    const unsub = storage.onMasterSettingsChangedForMaster(activeMaster, setSettings)
     return () => unsub()
-  }, [])
+  }, [activeMaster])
 
   const updateSetting = (key, value) => {
     const next = { ...settings, [key]: value }
     setSettings(next)
-    storage.saveMasterSettings(next)
+    if (activeMaster) storage.saveMasterSettingsForMaster(activeMaster, next)
   }
 
   return (

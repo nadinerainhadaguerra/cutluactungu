@@ -1,7 +1,9 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { useTheme } from '../contexts/ThemeContext'
 import { useSubHeader } from '../contexts/SubHeaderContext'
+import { useMasterProfile } from '../contexts/MasterProfileContext'
 import { EncyclopediaButton } from './EncyclopediaPopup'
 import CharacterSheet from './CharacterSheet'
 import MasterDashboard from './MasterDashboard'
@@ -34,15 +36,111 @@ function ThemeToggle() {
   )
 }
 
+function AddMasterPopup({ onSave, onClose }) {
+  const [name, setName] = useState('')
+
+  const handleSubmit = () => {
+    if (!name.trim()) return
+    onSave(name.trim())
+    onClose()
+  }
+
+  return createPortal(
+    <div className="fixed inset-0 bg-black/60 z-[9999] flex items-center justify-center p-4"
+         onClick={onClose}>
+      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-xs
+                      border-2 border-achtung-green/30"
+           onClick={e => e.stopPropagation()}>
+        <div className="flex items-center justify-between px-5 py-4 border-b border-achtung-green/20
+                        bg-achtung-green-dark text-white rounded-t-2xl">
+          <span className="font-gothic text-xl">Novo Mestre</span>
+          <button onClick={onClose} className="p-1 hover:bg-white/20 rounded transition-colors">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        <div className="p-5 space-y-4">
+          <input
+            type="text"
+            value={name}
+            onChange={e => setName(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && handleSubmit()}
+            placeholder="Nome do Mestre"
+            autoFocus
+            className="w-full px-3 py-2 rounded-lg border-2 border-achtung-green-muted/30
+                       dark:border-achtung-green/20 bg-white dark:bg-gray-800
+                       text-gray-900 dark:text-gray-100 text-sm outline-none
+                       focus:border-achtung-green transition-colors"
+          />
+          <button
+            onClick={handleSubmit}
+            disabled={!name.trim()}
+            className={`w-full py-3 rounded-xl font-bold text-lg transition-all shadow-lg
+              ${name.trim()
+                ? 'bg-achtung-green hover:bg-achtung-green-dark text-white hover:shadow-xl active:scale-[0.98]'
+                : 'bg-gray-300 dark:bg-gray-700 text-gray-500 cursor-not-allowed'
+              }`}
+          >
+            Adicionar
+          </button>
+        </div>
+      </div>
+    </div>,
+    document.body
+  )
+}
+
+function ChangeMestrePopup({ masters, currentMestre, onSelect, onClose }) {
+  return createPortal(
+    <div className="fixed inset-0 bg-black/60 z-[9999] flex items-center justify-center p-4"
+         onClick={onClose}>
+      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-xs
+                      border-2 border-achtung-green/30"
+           onClick={e => e.stopPropagation()}>
+        <div className="flex items-center justify-between px-5 py-4 border-b border-achtung-green/20
+                        bg-achtung-green-dark text-white rounded-t-2xl">
+          <span className="font-gothic text-xl">Alterar Mestre</span>
+          <button onClick={onClose} className="p-1 hover:bg-white/20 rounded transition-colors">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        <div className="p-3 space-y-1">
+          {masters.map(m => (
+            <button
+              key={m}
+              onClick={() => { onSelect(m); onClose() }}
+              className={`w-full text-left px-4 py-2.5 rounded-lg text-sm font-medium transition-colors
+                ${m === currentMestre
+                  ? 'bg-achtung-green/20 text-achtung-green-dark dark:text-achtung-green-light'
+                  : 'hover:bg-achtung-green/10 text-gray-700 dark:text-gray-300'
+                }`}
+            >
+              {m === currentMestre && <span className="mr-1">✓</span>}{m}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>,
+    document.body
+  )
+}
+
 export default function Layout() {
-  const { user, logout } = useAuth()
+  const { user, logout, updateMestre } = useAuth()
   const { subHeader } = useSubHeader()
+  const { masters, activeMaster, setActiveMaster, addMaster } = useMasterProfile()
   const [chatOpen, setChatOpen] = useState(false)
   const [notesOpen, setNotesOpen] = useState(false)
   const [scenariosOpen, setScenariosOpen] = useState(false)
   const [testsOpen, setTestsOpen] = useState(false)
   const [viewingScenario, setViewingScenario] = useState(null)
   const [activeScenario, setActiveScenario] = useState(null)
+  const [showAddMaster, setShowAddMaster] = useState(false)
+  const [showChangeMestre, setShowChangeMestre] = useState(false)
+  const [showChangePlayerMestre, setShowChangePlayerMestre] = useState(false)
 
   useEffect(() => {
     const unsub = storage.onActiveScenarioChanged(setActiveScenario)
@@ -59,8 +157,31 @@ export default function Layout() {
     else { setScenariosOpen(true); setNotesOpen(false) }
   }
 
-  // Sidebar top offset: accounts for secondary header bar when master views a character
   const sidebarTop = subHeader ? 'top-[94px]' : 'top-[57px]'
+
+  // Which master to use as notes owner
+  const notesOwner = user.type === 'master'
+    ? (activeMaster ? `master_${activeMaster}` : 'master')
+    : user.name
+
+  // Mestre name shown in subheader badge (character's assigned mestre)
+  const subHeaderMestre = subHeader?.characterMestre || null
+  const subHeaderCharName = subHeader?.characterName || null
+  const subHeaderIsNpc = subHeader?.isNpc || false
+
+  const handleChangeMestre = async (newMestre) => {
+    if (!subHeaderCharName) return
+    if (subHeaderIsNpc) {
+      await storage.setNpcMestre(subHeaderCharName, newMestre)
+    } else {
+      await storage.setCharacterMestre(subHeaderCharName, newMestre)
+    }
+  }
+
+  const handleChangePlayerMestre = async (newMestre) => {
+    await storage.setCharacterMestre(user.name, newMestre)
+    updateMestre(newMestre)
+  }
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -72,10 +193,46 @@ export default function Layout() {
             <span className="hidden sm:inline text-xs text-white/60 uppercase tracking-wider">2d20</span>
           </div>
 
-          <div className="flex items-center gap-2 sm:gap-4">
-            <span className="text-sm text-white/80 hidden sm:inline">
-              {user.type === 'master' ? 'Mestre' : user.name}
-            </span>
+          <div className="flex items-center gap-2 sm:gap-3">
+            {user.type === 'master' ? (
+              <div className="flex items-center gap-1.5">
+                <select
+                  value={activeMaster || ''}
+                  onChange={e => setActiveMaster(e.target.value || null)}
+                  className="text-sm bg-white/10 hover:bg-white/20 border border-white/20
+                             rounded-lg px-3 py-1.5 text-white outline-none cursor-pointer
+                             transition-colors appearance-none min-w-[130px]"
+                >
+                  <option value="" className="bg-gray-800 text-white">Selecionar Mestre...</option>
+                  {masters.map(m => (
+                    <option key={m} value={m} className="bg-gray-800 text-white">{m}</option>
+                  ))}
+                </select>
+                <button
+                  onClick={() => setShowAddMaster(true)}
+                  className="w-7 h-7 flex items-center justify-center rounded-lg
+                             bg-white/10 hover:bg-white/25 border border-white/20
+                             text-white font-bold text-lg transition-colors"
+                  title="Adicionar Mestre"
+                >
+                  +
+                </button>
+              </div>
+            ) : (
+              <div className="hidden sm:flex items-center gap-2">
+                {user.mestre && (
+                  <button
+                    onClick={() => setShowChangePlayerMestre(true)}
+                    className="text-sm font-semibold text-achtung-green-light hover:text-white
+                               transition-colors"
+                    title="Clique para alterar o Mestre desta ficha"
+                  >
+                    {user.mestre}
+                  </button>
+                )}
+                <span className="text-sm text-white/80">{user.name}</span>
+              </div>
+            )}
 
             {user.type === 'master' && (
               <>
@@ -126,18 +283,17 @@ export default function Layout() {
 
             <button
               onClick={logout}
-              className="px-3 py-1.5 text-sm rounded-lg bg-red-600/80 hover:bg-red-600
-                         transition-colors"
+              className="px-3 py-1.5 text-sm rounded-lg bg-red-600/80 hover:bg-red-600 transition-colors"
             >
               Sair
             </button>
           </div>
         </div>
 
-        {/* Secondary bar: back navigation when master views a character/NPC sheet */}
+        {/* Secondary bar: back navigation + mestre badge when master views a character */}
         {subHeader && (
           <div className="border-t border-white/10">
-            <div className="max-w-screen-2xl mx-auto px-4 py-2">
+            <div className="max-w-screen-2xl mx-auto px-4 py-2 flex items-center gap-3">
               <button
                 onClick={subHeader.onBack}
                 className="flex items-center gap-2 text-sm text-white/80 hover:text-white transition-colors"
@@ -147,16 +303,35 @@ export default function Layout() {
                 </svg>
                 {subHeader.label}
               </button>
+              {subHeaderMestre && (
+                <button
+                  onClick={() => setShowChangeMestre(true)}
+                  className="text-sm font-semibold text-achtung-green-light hover:text-white
+                             transition-colors underline underline-offset-2"
+                  title="Clique para alterar o Mestre desta ficha"
+                >
+                  {subHeaderMestre}
+                </button>
+              )}
             </div>
           </div>
         )}
       </header>
 
+      {/* Master selector required notice */}
+      {user.type === 'master' && !activeMaster && (
+        <div className="bg-yellow-500/10 border-b border-yellow-500/30 px-4 py-2 text-center">
+          <span className="text-sm text-yellow-700 dark:text-yellow-300">
+            Selecione um perfil de Mestre no menu acima para acessar o painel.
+          </span>
+        </div>
+      )}
+
       {/* Main Content */}
       <div className="flex-1 flex relative">
         <main className={`flex-1 transition-all duration-300 ${chatOpen ? 'md:mr-96' : ''} ${(notesOpen || scenariosOpen) ? 'md:ml-80' : ''}`}>
           {user.type === 'master' ? (
-            <MasterDashboard />
+            activeMaster ? <MasterDashboard activeMaster={activeMaster} /> : null
           ) : (
             <CharacterSheet characterName={user.name} />
           )}
@@ -171,7 +346,7 @@ export default function Layout() {
         >
           <NotesPanel
             onClose={() => setNotesOpen(false)}
-            owner={user.type === 'master' ? 'master' : user.name}
+            owner={notesOwner}
           />
         </div>
 
@@ -187,6 +362,7 @@ export default function Layout() {
               onClose={() => setScenariosOpen(false)}
               activeScenario={activeScenario}
               onViewScenario={setViewingScenario}
+              activeMaster={activeMaster}
             />
           </div>
         )}
@@ -200,6 +376,7 @@ export default function Layout() {
         >
           <Chat
             senderName={user.type === 'master' ? 'Mestre' : user.name}
+            mestre={user.type === 'master' ? activeMaster : user.mestre}
             onClose={() => setChatOpen(false)}
             isVisible={chatOpen}
           />
@@ -246,6 +423,34 @@ export default function Layout() {
       {/* Tests Popup - master only */}
       {testsOpen && user.type === 'master' && (
         <TestsPopup onClose={() => setTestsOpen(false)} />
+      )}
+
+      {/* Add Master Popup */}
+      {showAddMaster && (
+        <AddMasterPopup
+          onSave={addMaster}
+          onClose={() => setShowAddMaster(false)}
+        />
+      )}
+
+      {/* Change Mestre Popup (subheader badge click — master view) */}
+      {showChangeMestre && subHeaderMestre !== null && (
+        <ChangeMestrePopup
+          masters={masters}
+          currentMestre={subHeaderMestre}
+          onSelect={handleChangeMestre}
+          onClose={() => setShowChangeMestre(false)}
+        />
+      )}
+
+      {/* Change Mestre Popup (header badge click — player view) */}
+      {showChangePlayerMestre && user.type === 'player' && (
+        <ChangeMestrePopup
+          masters={masters}
+          currentMestre={user.mestre}
+          onSelect={handleChangePlayerMestre}
+          onClose={() => setShowChangePlayerMestre(false)}
+        />
       )}
     </div>
   )

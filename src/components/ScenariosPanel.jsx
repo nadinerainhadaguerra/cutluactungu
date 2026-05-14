@@ -299,15 +299,17 @@ function ScenarioCard({ scenario, onDelete, onEdit, onShow, onView, isActive }) 
   )
 }
 
-export default function ScenariosPanel({ onClose, activeScenario, onViewScenario }) {
-  const [scenarios, setScenarios] = useState([])
+export default function ScenariosPanel({ onClose, activeScenario, onViewScenario, activeMaster }) {
+  const [allScenarios, setAllScenarios] = useState([])
   const [showPopup, setShowPopup] = useState(false)
   const [editingScenario, setEditingScenario] = useState(null)
   const [playerSelectFor, setPlayerSelectFor] = useState(null)
   const [players, setPlayers] = useState([])
 
+  const scenarios = allScenarios.filter(s => s.mestre === activeMaster)
+
   useEffect(() => {
-    const unsub = storage.onScenariosChanged(setScenarios)
+    const unsub = storage.onScenariosChanged(setAllScenarios)
     return () => unsub()
   }, [])
 
@@ -316,7 +318,7 @@ export default function ScenariosPanel({ onClose, activeScenario, onViewScenario
   }, [])
 
   const createScenario = async (title, images) => {
-    await storage.createScenario(title, images)
+    await storage.createScenario(title, images, activeMaster)
     setShowPopup(false)
   }
 

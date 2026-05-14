@@ -112,6 +112,8 @@ export function createCharacterTemplate(name, password) {
       extraTalentKeywords: [],
       spellTraditions: [],
     },
+    mestre: '',
+    filiacoes: {},
     emCena: false,
     portraitUrl: '',
     portraitScale: 1,

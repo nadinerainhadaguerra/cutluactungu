@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { storage } from '../services/storage'
 import { useSelection } from '../contexts/SelectionContext'
 import SheetPage1 from './SheetPage1'
@@ -135,6 +136,92 @@ const FRAMES = [
   { key: 'cutuloframe', label: 'Cthulhu' },
   { key: 'defaultimg',  label: 'Padrão'  },
 ]
+
+const BADGE_IMAGES = {
+  'Monarcas': '/distintivomonarca.png',
+  'Totem': '/distintivototem.png',
+  'Encantados': '/distintivoencantados.png',
+}
+
+function FiliacaoSelectionPopup({ org, character, updateCharacter, onClose }) {
+  const chosenAff = character.filiacoes?.[org.name] || null
+
+  const handleSelect = (affName) => {
+    updateCharacter(prev => ({
+      ...prev,
+      filiacoes: { ...(prev.filiacoes || {}), [org.name]: affName },
+    }))
+    onClose()
+  }
+
+  const handleRemove = () => {
+    updateCharacter(prev => {
+      const newFiliacoes = { ...(prev.filiacoes || {}) }
+      delete newFiliacoes[org.name]
+      return { ...prev, filiacoes: newFiliacoes }
+    })
+    onClose()
+  }
+
+  return createPortal(
+    <div className="fixed inset-0 bg-black/60 z-[80] flex items-center justify-center p-4"
+         onClick={onClose}>
+      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-sm
+                      border-2 border-purple-500/30"
+           onClick={e => e.stopPropagation()}>
+        <div className="flex items-center justify-between px-5 py-4 border-b border-purple-500/20
+                        bg-purple-700 text-white rounded-t-2xl">
+          <span className="font-gothic text-xl">Filiações {org.name}</span>
+          <button onClick={onClose} className="p-1 hover:bg-white/20 rounded transition-colors">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        <div className="p-4">
+          {org.affiliations.length === 0 ? (
+            <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-6">
+              Nenhuma filiação disponível.
+            </p>
+          ) : (
+            <div className="grid grid-cols-2 gap-3 mb-3">
+              {org.affiliations.map(aff => {
+                const img = BADGE_IMAGES[aff] || '/whochar.png'
+                const isSelected = chosenAff === aff
+                return (
+                  <button
+                    key={aff}
+                    onClick={() => handleSelect(aff)}
+                    className={`flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-all
+                      ${isSelected
+                        ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/30'
+                        : 'border-gray-200 dark:border-gray-700 hover:border-purple-300 dark:hover:border-purple-700'}`}
+                  >
+                    <img src={img} alt={aff} className="w-16 h-16 object-contain" />
+                    <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">{aff}</span>
+                    {isSelected && (
+                      <span className="text-[10px] text-purple-600 dark:text-purple-400">✓ Atual</span>
+                    )}
+                  </button>
+                )
+              })}
+            </div>
+          )}
+          {chosenAff && (
+            <button
+              onClick={handleRemove}
+              className="w-full py-2 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20
+                         rounded-lg transition-colors"
+            >
+              Remover filiação
+            </button>
+          )}
+        </div>
+      </div>
+    </div>,
+    document.body
+  )
+}
 
 function PortraitFrame({ url, scale, offsetX, offsetY, naturalWidth, naturalHeight, frame, onChange }) {
   const [showUrlInput, setShowUrlInput] = useState(false)
@@ -443,23 +530,26 @@ function PortraitFrame({ url, scale, offsetX, offsetY, naturalWidth, naturalHeig
   )
 }
 
-function MomentumCounter() {
+function MomentumCounter({ mestre }) {
   const [momentum, setMomentum] = useState(0)
 
   useEffect(() => {
-    const unsub = storage.onMomentumChanged(setMomentum)
+    if (!mestre) return
+    const unsub = storage.onMomentumChangedForMaster(mestre, setMomentum)
     return () => unsub()
-  }, [])
+  }, [mestre])
 
   const decrease = () => {
+    if (!mestre) return
     const val = Math.max(0, momentum - 1)
-    storage.setMomentum(val)
+    storage.setMomentumForMaster(mestre, val)
     setMomentum(val)
   }
 
   const increase = () => {
+    if (!mestre) return
     const val = Math.min(6, momentum + 1)
-    storage.setMomentum(val)
+    storage.setMomentumForMaster(mestre, val)
     setMomentum(val)
   }
 
@@ -514,6 +604,8 @@ export default function CharacterSheet({ characterName, isMaster = false, isNpc 
   const [activeTest, setActiveTest] = useState(null)
   const [showMasterConfig, setShowMasterConfig] = useState(false)
   const [wizardHighlight, setWizardHighlight] = useState([])
+  const [campaignSettings, setCampaignSettings] = useState(null)
+  const [filiacaoPopup, setFiliacaoPopup] = useState(null)
   const { setActiveCharacterName } = useSelection()
   const saveTimerRef = useRef(null)
   const localUpdateRef = useRef(false)
@@ -569,6 +661,13 @@ export default function CharacterSheet({ characterName, isMaster = false, isNpc 
   const updateField = useCallback((field, value) => {
     updateCharacter(prev => ({ ...prev, [field]: value }))
   }, [updateCharacter])
+
+  const charMestre = character?.mestre || ''
+  useEffect(() => {
+    if (!charMestre || isNpc) { setCampaignSettings(null); return }
+    const unsub = storage.onCampaignSettingsChangedForMaster(charMestre, setCampaignSettings)
+    return () => unsub()
+  }, [charMestre, isNpc])
 
   if (!character) {
     return (
@@ -632,8 +731,33 @@ export default function CharacterSheet({ characterName, isMaster = false, isNpc 
       </div>
 
       {/* Momentum Counter + Portrait */}
-      <div className="flex items-center justify-center gap-6 mb-4">
-        <MomentumCounter />
+      <div className="flex items-center justify-center gap-4 sm:gap-6 mb-4 flex-wrap">
+        {/* Badge slots for active campaign orgs (player view only) */}
+        {!isMaster && !isNpc && (campaignSettings?.organizations || [])
+          .filter(o => o.active)
+          .map(org => {
+            const chosenAff = character.filiacoes?.[org.name] || null
+            const badgeImg = chosenAff ? (BADGE_IMAGES[chosenAff] || '/whochar.png') : '/whochar.png'
+            return (
+              <button
+                key={org.name}
+                onClick={() => setFiliacaoPopup(org)}
+                className="flex flex-col items-center gap-1 group -translate-x-[50%]"
+                title={`Filiações ${org.name} — clique para escolher`}
+              >
+                <div className="w-32 h-32 rounded-full overflow-hidden border-2 border-purple-400/50
+                                group-hover:border-purple-500 transition-colors shadow-md">
+                  <img src={badgeImg} alt={org.name} className="w-full h-full object-cover" />
+                </div>
+                {chosenAff && (
+                  <span className="text-[10px] text-purple-600 dark:text-purple-400 font-semibold">
+                    {chosenAff}
+                  </span>
+                )}
+              </button>
+            )
+          })}
+        <MomentumCounter mestre={character.mestre} />
         <PortraitFrame
           url={character.portraitUrl || ''}
           scale={character.portraitScale || 1}
@@ -713,6 +837,16 @@ export default function CharacterSheet({ characterName, isMaster = false, isNpc 
           character={character}
           updateCharacter={updateCharacter}
           onClose={() => setShowMasterConfig(false)}
+        />
+      )}
+
+      {/* Filiação Selection Popup */}
+      {filiacaoPopup && !isMaster && (
+        <FiliacaoSelectionPopup
+          org={filiacaoPopup}
+          character={character}
+          updateCharacter={updateCharacter}
+          onClose={() => setFiliacaoPopup(null)}
         />
       )}
 

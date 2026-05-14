@@ -262,11 +262,13 @@ export function SpellTestPopup({ spell, character, characterName, onClose }) {
   const [error, setError] = useState('')
   const [momentum, setMomentum] = useState(0)
   const [useFortune, setUseFortune] = useState(false)
+  const mestre = character?.mestre || ''
 
   useEffect(() => {
-    const unsub = storage.onMomentumChanged(setMomentum)
+    if (!mestre) return
+    const unsub = storage.onMomentumChangedForMaster(mestre, setMomentum)
     return () => unsub()
-  }, [])
+  }, [mestre])
 
   const truths = (character?.personalTruths || []).filter(t => t.trim())
   const fortune = parseInt(character?.fortune) || 0
@@ -290,7 +292,7 @@ export function SpellTestPopup({ spell, character, characterName, onClose }) {
       setError(`Ímpeto insuficiente! Disponível: ${momentum}, necessário: ${momentumCost}.`)
       return
     }
-    if (purchasedDice > 0) storage.setMomentum(momentum - momentumCost)
+    if (purchasedDice > 0 && mestre) storage.setMomentumForMaster(mestre, momentum - momentumCost)
     if (useFortune) await storage.spendFortune(characterName)
 
     const dice = []
@@ -331,7 +333,7 @@ export function SpellTestPopup({ spell, character, characterName, onClose }) {
       systemRollData: rollData,
       timestamp: new Date().toISOString(),
     })
-    if (totalComplications > 0) await storage.addComplications(totalComplications)
+    if (totalComplications > 0 && mestre) await storage.addComplicationsForMaster(mestre, totalComplications)
   }
 
   const resetRoll = () => {
