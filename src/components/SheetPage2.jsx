@@ -939,6 +939,7 @@ export default function SheetPage2({ character, updateCharacter, isMaster = fals
   const [showWeaponCatalog, setShowWeaponCatalog] = useState(false)
   const [showContactModal, setShowContactModal] = useState(false)
   const [editingContactIdx, setEditingContactIdx] = useState(null)
+  const [editingBelongings, setEditingBelongings] = useState(false)
   const { activeCharacterName } = useSelection()
   const { settings } = useMasterSettings()
 
@@ -948,6 +949,20 @@ export default function SheetPage2({ character, updateCharacter, isMaster = fals
       belongings[index] = value
       return { ...prev, belongings }
     })
+  }
+
+  const addBelonging = () => {
+    updateCharacter(prev => ({
+      ...prev,
+      belongings: [...prev.belongings, ''],
+    }))
+  }
+
+  const removeBelonging = (index) => {
+    updateCharacter(prev => ({
+      ...prev,
+      belongings: prev.belongings.filter((_, i) => i !== index),
+    }))
   }
 
   const openAddContact = () => { setEditingContactIdx(null); setShowContactModal(true) }
@@ -1120,17 +1135,64 @@ export default function SheetPage2({ character, updateCharacter, isMaster = fals
     <div className="space-y-6">
       {/* Pertences */}
       <div>
-        <SectionHeader>Pertences</SectionHeader>
+        <div className="flex items-center gap-2">
+          <SectionHeader>Pertences</SectionHeader>
+          <button
+            type="button"
+            onClick={addBelonging}
+            className="w-7 h-7 flex items-center justify-center rounded-full
+                       bg-achtung-green/20 hover:bg-achtung-green/40
+                       text-achtung-green-dark dark:text-achtung-green-light
+                       transition-colors"
+            title="Adicionar espaço de item"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+          </button>
+          <button
+            type="button"
+            onClick={() => setEditingBelongings(v => !v)}
+            className={`w-7 h-7 flex items-center justify-center rounded-full transition-colors
+                       ${editingBelongings
+                         ? 'bg-red-500/20 hover:bg-red-500/40 text-red-500'
+                         : 'bg-achtung-green/20 hover:bg-achtung-green/40 text-achtung-green-dark dark:text-achtung-green-light'}`}
+            title={editingBelongings ? 'Concluir edição' : 'Editar pertences'}
+          >
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+            </svg>
+          </button>
+        </div>
         <div className="mt-2 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
           {character.belongings.map((item, i) => (
-            <input
-              key={i}
-              type="text"
-              value={item}
-              onChange={e => updateBelonging(i, e.target.value)}
-              className="sheet-input text-sm"
-              placeholder={`Item ${i + 1}`}
-            />
+            <div key={i}
+                 className="relative rounded-xl border border-achtung-green/20 bg-gray-50 dark:bg-gray-800/60
+                            hover:border-achtung-green/40 transition-colors p-2">
+              {editingBelongings && (
+                <button
+                  type="button"
+                  onClick={() => removeBelonging(i)}
+                  className="absolute -top-2 -right-2 w-5 h-5 flex items-center justify-center
+                             rounded-full bg-red-500 hover:bg-red-600 text-white shadow-md
+                             transition-colors z-10"
+                  title="Remover item"
+                >
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              )}
+              <input
+                type="text"
+                value={item}
+                onChange={e => updateBelonging(i, e.target.value)}
+                className="w-full bg-transparent outline-none text-sm text-gray-800 dark:text-gray-200
+                           placeholder-gray-400 dark:placeholder-gray-600"
+                placeholder={`Item ${i + 1}`}
+              />
+            </div>
           ))}
         </div>
       </div>
