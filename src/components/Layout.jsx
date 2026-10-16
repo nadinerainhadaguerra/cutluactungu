@@ -13,6 +13,7 @@ import ScenariosPanel from './ScenariosPanel'
 import ScenarioViewer from './ScenarioViewer'
 import ScenarioDisplay from './ScenarioDisplay'
 import TestsPopup from './TestsPopup'
+import SystemSwitchButton from './SystemSwitchButton'
 import { storage } from '../services/storage'
 
 function ThemeToggle() {
@@ -189,6 +190,7 @@ export default function Layout() {
       <header className="bg-achtung-green-dark dark:bg-gray-900 text-white shadow-lg sticky top-0 z-40">
         <div className="max-w-screen-2xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
+            <SystemSwitchButton />
             <h1 className="font-gothic text-xl sm:text-2xl">Achtung! Cthulhu</h1>
             <span className="hidden sm:inline text-xs text-white/60 uppercase tracking-wider">2d20</span>
           </div>

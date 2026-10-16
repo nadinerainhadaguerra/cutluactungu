@@ -33,6 +33,7 @@
   ::-webkit-scrollbar-thumb:hover {
     background: #6d9e52;
   }
+
 }
 
 @layer components {
@@ -112,8 +113,104 @@
            border border-achtung-green-muted/30 dark:border-achtung-green/20;
   }
 
+  /* ---- Monstro da Semana ---- */
+  .mds-card {
+    @apply bg-white/95 dark:bg-mds-950/90 backdrop-blur-sm rounded-xl shadow-xl
+           border border-mds-300/50 dark:border-mds-700/50 text-gray-900 dark:text-mds-50;
+  }
+
+  .mds-header-bar {
+    @apply bg-mds-800 dark:bg-mds-950 text-white shadow-lg;
+  }
+
+  .mds-title {
+    @apply font-mds-title tracking-wide text-mds-800 dark:text-mds-200;
+  }
+
+  .mds-section-label {
+    @apply bg-mds-700 dark:bg-mds-800 text-white px-4 py-1 font-mds-title text-xl tracking-wide inline-block;
+    clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 100%, 0 100%);
+  }
+
+  .mds-btn {
+    @apply bg-mds-600 hover:bg-mds-700 dark:bg-mds-500 dark:hover:bg-mds-600 text-white font-semibold
+           py-2 px-5 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg active:scale-95
+           disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100;
+  }
+
+  .mds-btn-ghost {
+    @apply bg-mds-100 hover:bg-mds-200 text-mds-800 dark:bg-mds-900 dark:hover:bg-mds-800 dark:text-mds-100
+           font-semibold py-2 px-4 rounded-lg transition-colors;
+  }
+
+  .mds-btn-danger {
+    @apply bg-red-600/90 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors;
+  }
+
+  .mds-input {
+    @apply w-full px-4 py-2.5 rounded-lg border-2 border-mds-300/70 dark:border-mds-700
+           bg-white dark:bg-mds-900/60 text-gray-900 dark:text-mds-50
+           placeholder:text-gray-400 dark:placeholder:text-mds-300/50
+           focus:border-mds-500 dark:focus:border-mds-400 outline-none transition-colors;
+  }
+
+  .mds-icon-btn {
+    @apply p-2 rounded-lg hover:bg-white/20 transition-colors;
+  }
+
+  /* Ficha: tipografia e caixas como na cartilha impressa */
+  .mds-sheet {
+    @apply font-mds-serif text-[15px] leading-snug text-gray-900 dark:text-mds-50;
+  }
+
+  .mds-sheet-h {
+    @apply font-mds-serif font-bold uppercase tracking-wide text-mds-800 dark:text-mds-200 text-[15px] mt-3 mb-1;
+  }
+
+  .mds-box {
+    @apply inline-flex items-center justify-center w-[18px] h-[18px] border-2 border-mds-700 dark:border-mds-300
+           rounded-[3px] cursor-pointer transition-colors flex-shrink-0 select-none
+           bg-white/60 dark:bg-mds-950/60 hover:bg-mds-200 dark:hover:bg-mds-800;
+  }
+
+  .mds-box-on {
+    @apply bg-mds-700 dark:bg-mds-300 border-mds-700 dark:border-mds-300 hover:bg-mds-600 dark:hover:bg-mds-200;
+  }
+
+  .mds-line-input {
+    @apply bg-transparent border-b-2 border-mds-300 dark:border-mds-700 focus:border-mds-600
+           dark:focus:border-mds-400 outline-none px-1 transition-colors;
+  }
+
   .parchment-bg {
     @apply bg-gradient-to-br from-achtung-parchment-light/70 via-achtung-parchment/60 to-achtung-parchment-dark/70
            dark:from-gray-900/70 dark:via-gray-950/60 dark:to-gray-900/70;
   }
+}
+
+/* ---- Monstro da Semana: fundo e scrollbar roxos ----
+   Fora de @layer de propósito: a classe system-mds é aplicada via JS e o Tailwind
+   descartaria a regra dentro de @layer por não achar a classe no código. */
+html.system-mds body {
+  background-color: #eee3f8;
+  background-image:
+    radial-gradient(ellipse at 15% 0%, rgba(160, 111, 210, 0.35), transparent 55%),
+    radial-gradient(ellipse at 90% 100%, rgba(88, 42, 133, 0.25), transparent 60%),
+    linear-gradient(160deg, #f7f2fc 0%, #e4d3f4 100%);
+}
+
+html.system-mds.dark body {
+  background-color: #1a0b2e;
+  background-image:
+    radial-gradient(ellipse at 15% 0%, rgba(109, 53, 163, 0.35), transparent 55%),
+    radial-gradient(ellipse at 90% 100%, rgba(67, 32, 106, 0.45), transparent 60%),
+    linear-gradient(160deg, #1f0e36 0%, #0f0620 100%);
+}
+
+html.system-mds ::-webkit-scrollbar-thumb {
+  background: #8348bd;
+}
+
+html.system-mds ::-webkit-scrollbar-thumb:hover {
+  background: #a06fd2;
 }

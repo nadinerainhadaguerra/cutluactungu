@@ -100,7 +100,7 @@ export function createCharacterTemplate(name, password) {
     fortune: '',
     attributes,
     skills,
-    belongings: Array(12).fill(''),
+    belongings: [],
     contacts: [],
     weapons: [],
     biography: '',

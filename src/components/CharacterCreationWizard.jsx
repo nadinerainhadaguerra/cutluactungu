@@ -1808,7 +1808,12 @@ export default function CharacterCreationWizard({ character, onComplete, onHighl
     processPertences(selectedArq?.pertencesEstruturado, 'arq')
     processPertences(selectedAnt?.pertencesEstruturado, 'ant')
     processPertences(selectedCar?.pertencesEstruturado, 'car')
-    const finalBelongings = Array(12).fill('').map((_, i) => allBelongings[i] || '')
+    const finalBelongings = allBelongings
+      .filter(n => n && n.trim())
+      .map(n => ({ nome: n, descricao: '' }))
+    const finalContacts = allContacts
+      .filter(n => n && n.trim())
+      .map(n => ({ nome: n, tipo: '', descricao: '' }))
 
     onComplete({
       ...character,
@@ -1823,7 +1828,7 @@ export default function CharacterCreationWizard({ character, onComplete, onHighl
       spells,
       personalTruths: finalTruths,
       belongings: finalBelongings,
-      contacts: allContacts,
+      contacts: finalContacts,
       weapons: [...(character.weapons || []), ...allWeapons],
       setupComplete: true,
       updatedAt: new Date().toISOString(),

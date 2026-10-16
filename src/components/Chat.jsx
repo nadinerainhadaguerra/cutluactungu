@@ -367,7 +367,7 @@ function ItemRefMessage({ data }) {
     setShowTooltip(v => !v)
   }
 
-  const icon = data.type === 'spell' ? '✨' : data.type === 'contact' ? '👤' : '🎭'
+  const icon = data.type === 'spell' ? '✨' : data.type === 'contact' ? '👤' : data.type === 'belonging' ? '🎒' : '🎭'
   const fields = data.type === 'spell'
     ? [
         data.skill      && { label: 'Perícia',      value: data.skill },
@@ -376,6 +376,10 @@ function ItemRefMessage({ data }) {
         data.duration   && { label: 'Duração',       value: data.duration },
         data.effect     && { label: 'Efeito',        value: data.effect },
         data.momentum   && { label: 'Ímpeto',        value: data.momentum },
+      ].filter(Boolean)
+    : data.type === 'belonging'
+    ? [
+        data.effect && { label: 'Descrição', value: data.effect },
       ].filter(Boolean)
     : data.type === 'contact'
     ? [

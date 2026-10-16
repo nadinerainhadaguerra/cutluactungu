@@ -927,6 +927,198 @@ function ContactModal({ initial, onSave, onClose }) {
   )
 }
 
+/* ── Normalização (fichas antigas guardavam pertences/contatos como texto) ── */
+function normalizeBelonging(b) {
+  if (b && typeof b === 'object') return { nome: b.nome || '', descricao: b.descricao || '' }
+  return { nome: typeof b === 'string' ? b : '', descricao: '' }
+}
+
+function normalizeContact(c) {
+  if (c && typeof c === 'object') return { nome: c.nome || '', tipo: c.tipo || '', descricao: c.descricao || '' }
+  return { nome: typeof c === 'string' ? c : '', tipo: '', descricao: '' }
+}
+
+const ChatIcon = ({ className = 'w-3 h-3' }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+      d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+  </svg>
+)
+
+/* ── Belonging Tag ── */
+function BelongingTag({ item, editing, onEdit, onDelete, onSendToChat }) {
+  const [showCard, setShowCard] = useState(false)
+  const [cardPos, setCardPos] = useState({ top: 0, left: 0, placement: 'above' })
+  const cardRef = useRef(null)
+  const tagRef = useRef(null)
+
+  useEffect(() => {
+    if (!showCard) return
+    function handleClick(e) {
+      const inCard = cardRef.current && cardRef.current.contains(e.target)
+      const inTag = tagRef.current && tagRef.current.contains(e.target)
+      if (!inCard && !inTag) setShowCard(false)
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [showCard])
+
+  useEffect(() => { if (editing) setShowCard(false) }, [editing])
+
+  const handleNameClick = () => {
+    if (editing) { onEdit(); return }
+    if (!showCard && tagRef.current) {
+      const rect = tagRef.current.getBoundingClientRect()
+      const TW = 256, TH = 180
+      const above = rect.top >= TH + 8
+      let left = rect.left
+      if (left + TW > window.innerWidth - 8) left = window.innerWidth - TW - 8
+      if (left < 8) left = 8
+      setCardPos({ top: above ? rect.top - 8 : rect.bottom + 8, left, placement: above ? 'above' : 'below' })
+    }
+    setShowCard(v => !v)
+  }
+
+  return (
+    <>
+      <div ref={tagRef}
+           className="relative rounded-xl border border-achtung-green/20 bg-gray-50 dark:bg-gray-800/60
+                      hover:border-achtung-green/40 transition-colors p-2 flex items-center gap-1">
+        {editing && (
+          <button
+            type="button"
+            onClick={onDelete}
+            className="absolute -top-2 -right-2 w-5 h-5 flex items-center justify-center
+                       rounded-full bg-red-500 hover:bg-red-600 text-white shadow-md
+                       transition-colors z-10"
+            title="Remover item"
+          >
+            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        )}
+        <button
+          type="button"
+          onClick={handleNameClick}
+          className="flex-1 min-w-0 text-left text-sm truncate text-gray-800 dark:text-gray-200
+                     hover:text-achtung-green-dark dark:hover:text-achtung-green-light transition-colors"
+          title={editing ? 'Editar item' : 'Ver descrição'}
+        >
+          {item.nome}
+        </button>
+        {!editing && (
+          <button
+            type="button"
+            onClick={onSendToChat}
+            title="Enviar no chat"
+            className="shrink-0 p-1 rounded text-gray-400 hover:text-blue-500
+                       hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+          >
+            <ChatIcon />
+          </button>
+        )}
+      </div>
+
+      {showCard && ReactDOM.createPortal(
+        <div
+          ref={cardRef}
+          style={{
+            position: 'fixed',
+            top: cardPos.top,
+            left: cardPos.left,
+            transform: cardPos.placement === 'above' ? 'translateY(-100%)' : 'none',
+            zIndex: 9999,
+          }}
+          className="bg-gray-900 border border-achtung-green/40 rounded-lg p-3 shadow-2xl w-64 text-[11px]"
+        >
+          <div className="text-achtung-green-light font-bold text-xs mb-2">🎒 {item.nome}</div>
+          {item.descricao ? (
+            <div className="text-gray-200 leading-relaxed whitespace-pre-wrap">{item.descricao}</div>
+          ) : (
+            <span className="text-gray-500 italic">Sem descrição.</span>
+          )}
+          <button
+            type="button"
+            onClick={() => { onSendToChat(); setShowCard(false) }}
+            className="mt-3 w-full flex items-center justify-center gap-1.5 py-1 rounded
+                       text-xs font-semibold text-blue-300 bg-blue-500/15 hover:bg-blue-500/30
+                       border border-blue-500/30 transition-colors"
+          >
+            <ChatIcon className="w-3.5 h-3.5" />
+            Enviar no chat
+          </button>
+        </div>,
+        document.body
+      )}
+    </>
+  )
+}
+
+/* ── Belonging Modal ── */
+function BelongingModal({ initial, onSave, onClose }) {
+  const [form, setForm] = useState(initial || { nome: '', descricao: '' })
+
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    if (!form.nome.trim()) return
+    onSave({ nome: form.nome.trim(), descricao: form.descricao })
+  }
+
+  return ReactDOM.createPortal(
+    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/50 px-4">
+      <div className="bg-white dark:bg-gray-900 rounded-xl shadow-2xl p-5 w-full max-w-sm
+                      border border-achtung-green/30">
+        <h3 className="text-sm font-bold text-achtung-green-dark dark:text-achtung-green-light mb-4">
+          {initial ? 'Editar Pertence' : 'Novo Pertence'}
+        </h3>
+        <form onSubmit={handleSubmit} className="space-y-3">
+          <div>
+            <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Nome *</label>
+            <input
+              type="text"
+              value={form.nome}
+              onChange={e => setForm(f => ({ ...f, nome: e.target.value }))}
+              className="sheet-input text-sm w-full"
+              placeholder="Nome do item"
+              autoFocus
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Descrição</label>
+            <textarea
+              value={form.descricao}
+              onChange={e => setForm(f => ({ ...f, descricao: e.target.value }))}
+              className="sheet-input text-sm w-full resize-none"
+              rows={4}
+              placeholder="Detalhes sobre este item..."
+            />
+          </div>
+          <div className="flex gap-2 justify-end pt-1">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-3 py-1.5 text-xs rounded-lg border border-gray-300 dark:border-gray-600
+                         text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800
+                         transition-colors"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              className="px-3 py-1.5 text-xs rounded-lg bg-achtung-green-dark text-white
+                         hover:bg-achtung-green transition-colors font-semibold"
+            >
+              Salvar
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>,
+    document.body
+  )
+}
+
 /* ── Main Component ── */
 export default function SheetPage2({ character, updateCharacter, isMaster = false }) {
   const [showWeaponForm, setShowWeaponForm] = useState(false)
@@ -940,51 +1132,67 @@ export default function SheetPage2({ character, updateCharacter, isMaster = fals
   const [showContactModal, setShowContactModal] = useState(false)
   const [editingContactIdx, setEditingContactIdx] = useState(null)
   const [editingBelongings, setEditingBelongings] = useState(false)
+  const [showBelongingModal, setShowBelongingModal] = useState(false)
+  const [editingBelongingIdx, setEditingBelongingIdx] = useState(null)
   const { activeCharacterName } = useSelection()
   const { settings } = useMasterSettings()
 
-  const updateBelonging = (index, value) => {
-    updateCharacter(prev => {
-      const belongings = [...prev.belongings]
-      belongings[index] = value
-      return { ...prev, belongings }
-    })
-  }
+  // Salva sempre como objetos e descarta os espaços vazios herdados do formato antigo
+  const cleanBelongings = (list) => list.map(normalizeBelonging).filter(b => b.nome.trim())
 
-  const addBelonging = () => {
-    updateCharacter(prev => ({
-      ...prev,
-      belongings: [...prev.belongings, ''],
-    }))
+  const openAddBelonging = () => { setEditingBelongingIdx(null); setShowBelongingModal(true) }
+  const openEditBelonging = (i) => { setEditingBelongingIdx(i); setShowBelongingModal(true) }
+
+  const saveBelonging = (data) => {
+    updateCharacter(prev => {
+      const belongings = [...(prev.belongings || [])]
+      if (editingBelongingIdx !== null) belongings[editingBelongingIdx] = data
+      else belongings.push(data)
+      return { ...prev, belongings: cleanBelongings(belongings) }
+    })
+    setShowBelongingModal(false)
   }
 
   const removeBelonging = (index) => {
     updateCharacter(prev => ({
       ...prev,
-      belongings: prev.belongings.filter((_, i) => i !== index),
+      belongings: cleanBelongings((prev.belongings || []).filter((_, i) => i !== index)),
     }))
+  }
+
+  const sendBelongingToChat = async (item) => {
+    await storage.saveMessage({
+      id: Date.now().toString(),
+      sender: activeCharacterName || 'Sistema',
+      type: 'item_ref',
+      content: item.nome,
+      itemRef: { type: 'belonging', name: item.nome, keyword: '', effect: item.descricao || '' },
+      rollData: null,
+      systemRollData: null,
+      timestamp: new Date().toISOString(),
+    })
   }
 
   const openAddContact = () => { setEditingContactIdx(null); setShowContactModal(true) }
   const openEditContact = (i) => { setEditingContactIdx(i); setShowContactModal(true) }
 
   const saveContact = (data) => {
-    if (editingContactIdx !== null) {
-      updateCharacter(prev => {
-        const contacts = [...(prev.contacts || [])]
-        contacts[editingContactIdx] = data
-        return { ...prev, contacts }
-      })
-    } else {
-      updateCharacter(prev => ({ ...prev, contacts: [...(prev.contacts || []), data] }))
-    }
+    updateCharacter(prev => {
+      const contacts = [...(prev.contacts || [])]
+      if (editingContactIdx !== null) contacts[editingContactIdx] = data
+      else contacts.push(data)
+      return { ...prev, contacts: cleanContacts(contacts) }
+    })
     setShowContactModal(false)
   }
+
+  // Contatos antigos (texto vindo do assistente de criação) viram objetos ao salvar
+  const cleanContacts = (list) => list.map(normalizeContact).filter(c => c.nome.trim())
 
   const removeContact = (index) => {
     updateCharacter(prev => ({
       ...prev,
-      contacts: (prev.contacts || []).filter((_, i) => i !== index),
+      contacts: cleanContacts((prev.contacts || []).filter((_, i) => i !== index)),
     }))
   }
 
@@ -1131,6 +1339,14 @@ export default function SheetPage2({ character, updateCharacter, isMaster = fals
     .map((t, i) => ({ ...t, _idx: i }))
     .filter(t => t.name && t.name.trim())
 
+  const belongings = (character.belongings || [])
+    .map((b, i) => ({ ...normalizeBelonging(b), _idx: i }))
+    .filter(b => b.nome.trim())
+
+  const contacts = (character.contacts || [])
+    .map((c, i) => ({ ...normalizeContact(c), _idx: i }))
+    .filter(c => c.nome.trim())
+
   return (
     <div className="space-y-6">
       {/* Pertences */}
@@ -1139,12 +1355,12 @@ export default function SheetPage2({ character, updateCharacter, isMaster = fals
           <SectionHeader>Pertences</SectionHeader>
           <button
             type="button"
-            onClick={addBelonging}
+            onClick={openAddBelonging}
             className="w-7 h-7 flex items-center justify-center rounded-full
                        bg-achtung-green/20 hover:bg-achtung-green/40
                        text-achtung-green-dark dark:text-achtung-green-light
                        transition-colors"
-            title="Adicionar espaço de item"
+            title="Adicionar pertence"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -1165,36 +1381,22 @@ export default function SheetPage2({ character, updateCharacter, isMaster = fals
             </svg>
           </button>
         </div>
-        <div className="mt-2 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
-          {character.belongings.map((item, i) => (
-            <div key={i}
-                 className="relative rounded-xl border border-achtung-green/20 bg-gray-50 dark:bg-gray-800/60
-                            hover:border-achtung-green/40 transition-colors p-2">
-              {editingBelongings && (
-                <button
-                  type="button"
-                  onClick={() => removeBelonging(i)}
-                  className="absolute -top-2 -right-2 w-5 h-5 flex items-center justify-center
-                             rounded-full bg-red-500 hover:bg-red-600 text-white shadow-md
-                             transition-colors z-10"
-                  title="Remover item"
-                >
-                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              )}
-              <input
-                type="text"
-                value={item}
-                onChange={e => updateBelonging(i, e.target.value)}
-                className="w-full bg-transparent outline-none text-sm text-gray-800 dark:text-gray-200
-                           placeholder-gray-400 dark:placeholder-gray-600"
-                placeholder={`Item ${i + 1}`}
+        {belongings.length === 0 ? (
+          <p className="mt-2 text-sm text-gray-400 dark:text-gray-600">Nenhum pertence adicionado.</p>
+        ) : (
+          <div className="mt-2 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
+            {belongings.map((item) => (
+              <BelongingTag
+                key={item._idx}
+                item={item}
+                editing={editingBelongings}
+                onEdit={() => openEditBelonging(item._idx)}
+                onDelete={() => removeBelonging(item._idx)}
+                onSendToChat={() => sendBelongingToChat(item)}
               />
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Talentos */}
@@ -1325,22 +1527,19 @@ export default function SheetPage2({ character, updateCharacter, isMaster = fals
             </svg>
           </button>
         </div>
-        {(character.contacts || []).filter(c => c && typeof c === 'object').length === 0 ? (
+        {contacts.length === 0 ? (
           <p className="mt-2 text-sm text-gray-400 dark:text-gray-600">Nenhum contato adicionado.</p>
         ) : (
           <div className="mt-2 grid grid-cols-2 sm:grid-cols-4 gap-2">
-            {(character.contacts || []).map((contact, i) => {
-              if (!contact || typeof contact !== 'object') return null
-              return (
-                <ContactTag
-                  key={i}
-                  contact={contact}
-                  onEdit={() => openEditContact(i)}
-                  onDelete={() => removeContact(i)}
-                  onSendToChat={() => sendContactToChat(contact)}
-                />
-              )
-            })}
+            {contacts.map((contact) => (
+              <ContactTag
+                key={contact._idx}
+                contact={contact}
+                onEdit={() => openEditContact(contact._idx)}
+                onDelete={() => removeContact(contact._idx)}
+                onSendToChat={() => sendContactToChat(contact)}
+              />
+            ))}
           </div>
         )}
       </div>
@@ -1419,9 +1618,17 @@ export default function SheetPage2({ character, updateCharacter, isMaster = fals
 
       {showContactModal && (
         <ContactModal
-          initial={editingContactIdx !== null ? (character.contacts || [])[editingContactIdx] : null}
+          initial={editingContactIdx !== null ? normalizeContact((character.contacts || [])[editingContactIdx]) : null}
           onSave={saveContact}
           onClose={() => setShowContactModal(false)}
+        />
+      )}
+
+      {showBelongingModal && (
+        <BelongingModal
+          initial={editingBelongingIdx !== null ? normalizeBelonging((character.belongings || [])[editingBelongingIdx]) : null}
+          onSave={saveBelonging}
+          onClose={() => setShowBelongingModal(false)}
         />
       )}
     </div>

@@ -5,6 +5,7 @@ import { useTheme } from '../contexts/ThemeContext'
 import { useMasterProfile } from '../contexts/MasterProfileContext'
 import { storage } from '../services/storage'
 import { EncyclopediaButton } from './EncyclopediaPopup'
+import SystemSwitchButton from './SystemSwitchButton'
 
 function ThemeToggleSmall() {
   const { isDark, toggleTheme } = useTheme()
@@ -185,6 +186,9 @@ export default function LoginScreen() {
 
   return (
     <div className="min-h-screen parchment-bg flex items-center justify-center p-4 relative">
+      <div className="absolute top-4 left-4">
+        <SystemSwitchButton />
+      </div>
       <div className="absolute top-4 right-4 flex items-center gap-2">
         <EncyclopediaButton className="p-2 rounded-lg bg-white/20 dark:bg-gray-800/50 hover:bg-white/40 dark:hover:bg-gray-700/50 transition-colors" />
         <ThemeToggleSmall />

@@ -1,4 +1,5 @@
 import { ThemeProvider } from './contexts/ThemeContext'
+import { SystemProvider, useSystem } from './contexts/SystemContext'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { SelectionProvider } from './contexts/SelectionContext'
 import { MasterSettingsProvider } from './contexts/MasterSettingsContext'
@@ -6,6 +7,7 @@ import { SubHeaderProvider } from './contexts/SubHeaderContext'
 import { MasterProfileProvider } from './contexts/MasterProfileContext'
 import LoginScreen from './components/LoginScreen'
 import Layout from './components/Layout'
+import MdsApp from './mds/MdsApp'
 
 function AppContent() {
   const { user } = useAuth()
@@ -17,22 +19,35 @@ function AppContent() {
   return <Layout />
 }
 
+function AchtungApp() {
+  return (
+    <AuthProvider>
+      <MasterProfileProvider>
+        <SelectionProvider>
+          <MasterSettingsProvider>
+            <SubHeaderProvider>
+              <div className="min-h-screen parchment-bg transition-colors duration-300">
+                <AppContent />
+              </div>
+            </SubHeaderProvider>
+          </MasterSettingsProvider>
+        </SelectionProvider>
+      </MasterProfileProvider>
+    </AuthProvider>
+  )
+}
+
+function SystemRouter() {
+  const { system } = useSystem()
+  return system === 'mds' ? <MdsApp /> : <AchtungApp />
+}
+
 export default function App() {
   return (
     <ThemeProvider>
-      <AuthProvider>
-        <MasterProfileProvider>
-          <SelectionProvider>
-            <MasterSettingsProvider>
-              <SubHeaderProvider>
-                <div className="min-h-screen parchment-bg transition-colors duration-300">
-                  <AppContent />
-                </div>
-              </SubHeaderProvider>
-            </MasterSettingsProvider>
-          </SelectionProvider>
-        </MasterProfileProvider>
-      </AuthProvider>
+      <SystemProvider>
+        <SystemRouter />
+      </SystemProvider>
     </ThemeProvider>
   )
 }
